@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mesai Takip 2026</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#111827" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f3f4f6; color: #111827; }
+    header { background: #111827; color: white; padding: 16px; text-align: center; }
+    header h1 { margin: 0; font-size: 24px; }
+    header p { margin: 6px 0 0; font-size: 14px; opacity: .9; }
+    main { max-width: 820px; margin: auto; padding: 12px; }
+    .card { background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+    h2 { margin-top: 0; font-size: 18px; }
+    label { display: block; font-weight: bold; margin-top: 10px; margin-bottom: 6px; }
+    input, select, button { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 16px; }
+    button { margin-top: 12px; background: #111827; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button.danger { background: #b91c1c; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .status { padding: 12px; border-radius: 12px; margin-top: 10px; font-weight: bold; text-align: center; }
+    .ok { background: #ecfdf5; color: #065f46; }
+    .warn { background: #fef2f2; color: #991b1b; }
+    .summary-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .box { background: #f9fafb; padding: 12px; border-radius: 12px; border: 1px solid #e5e7eb; text-align: center; }
+    .box span { display: block; font-size: 22px; font-weight: bold; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+    th, td { border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 13px; vertical-align: top; }
+    th { background: #f9fafb; }
+    .wide { overflow-x: auto; }
+    .over { color: #b91c1c; font-weight: bold; }
+    .under { color: #065f46; font-weight: bold; }
+    .small { font-size: 13px; color: #6b7280; line-height: 1.4; }
+    .delete { background: #b91c1c; padding: 7px; margin: 0; font-size: 12px; }
+    .desc { min-width: 150px; color: #374151; }
+    @media (max-width: 620px) {
+      .grid, .summary-box { grid-template-columns: 1fr; }
+      th, td { font-size: 12px; padding: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mesai Takip 2026</h1>
+    <p>Sade sürüm: tarih, mesai, açıklama ve 12 aylık özet</p>
+  
+<div style="margin-top:10px;font-size:14px;opacity:.9;">
+  Hazırlayan: <strong>PM. Hüseyin YILDIZ</strong>
+</div>
+
+</header>
+
+  <main>
+    <section class="card">
+      <h2>Veri Girişi</h2>
+      <label>Ay Seç</label>
+      <select id="monthSelect"></select>
+
+      <div class="grid">
+        <div>
+          <label>Tarih</label>
+          <input type="date" id="dateInput" />
+        </div>
+        <div>
+          <label>Yapılan Mesai</label>
+          <input type="number" id="hoursInput" step="0.01" placeholder="Örn: 8" />
+        </div>
+      </div>
+
+      <label>Açıklama</label>
+      <input type="text" id="descInput" placeholder="Örn: Gece devriyesi, maç görevi, yol emniyeti..." />
+
+      <button onclick="addRecord()">Kaydet</button>
+      <p class="small">Açıklama alanına hangi mesaiye gittiğini yazabilirsin. Kayıtlar telefonda saklanır.</p>
+    </section>
+
+    <section class="card">
+      <h2>Seçilen Ay Özeti</h2>
+      <div class="summary-box">
+        <div class="box">Yapılacak Mesai <span id="targetTotal">0.00</span></div>
+        <div class="box">Girilen Mesai Değeri <span id="weightedTotal">0.00</span></div>
+      </div>
+      <div id="statusBox" class="status ok">Durum</div>
+    </section>
+
+    <section class="card">
+      <h2>Bu Ayın Kayıtları</h2>
+      <div class="wide">
+        <table>
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Tür</th>
+              <th>Mesai</th>
+              <th>Değer</th>
+              <th>Açıklama</th>
+              <th>Sil</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>12 Aylık Özet</h2>
+      <div class="wide">
+        <table>
+          <thead>
+            <tr>
+              <th>Ay</th>
+              <th>Yapılacak Mesai</th>
+              <th>Hafta İçi</th>
+              <th>Hafta Sonu</th>
+              <th>Girilen Mesai Değeri</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <button class="danger" onclick="clearAll()">Tüm Kayıtları Sil</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
