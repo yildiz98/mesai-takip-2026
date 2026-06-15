@@ -1,11 +1,11 @@
 {
-  "name": "Mesai Takip 2026 Açıklamalı",
-  "short_name": "Mesai",
-  "start_url": "./index.html",
+  "name": "Mesai Takip",
+  "short_name": "Mesai V2",
+  "start_url": "./index.html?v=10",
   "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#111827",
-  "description": "Açıklamalı 12 aylık mesai takip uygulaması.",
+  "background_color": "#030b16",
+  "theme_color": "#061326",
+  "description": "Telefonda ana ekrana kurulan kart tabanlı mobil mesai takip uygulaması.",
   "icons": [
     {
       "src": "icon.svg",
@@ -17,5 +17,6 @@
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
-  ]
+  ],
+  "orientation": "portrait"
 }
