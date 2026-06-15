@@ -123,11 +123,165 @@ const HOLIDAYS_BY_YEAR = {
 const HOLIDAYS = HOLIDAYS_BY_YEAR[CURRENT_YEAR] || [];
 
 const RECORDS_KEY = `mesai_kayitlari_${CURRENT_YEAR}_sade_aciklamali`;
+const AUTO_BACKUP_KEY = `mesai_yedek_${CURRENT_YEAR}_otomatik`;
+const LAST_GOOD_BACKUP_KEY = `mesai_yedek_${CURRENT_YEAR}_son_saglam`;
+const LEGACY_KEY_PREFIXES = ["mesai_kayitlari_", "mesai_yedek_"];
 
-let records = JSON.parse(localStorage.getItem(RECORDS_KEY) || "[]");
+function safeJsonParse(value, fallback = null) {
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
+function normalizeRecord(record) {
+  if (!record || !record.date) return null;
+  const hours = Number(record.hours ?? record.hour ?? record.mesai ?? 0);
+  if (Number.isNaN(hours)) return null;
+  return {
+    id: Number(record.id) || Date.now() + Math.floor(Math.random() * 100000),
+    date: String(record.date),
+    hours,
+    description: String(record.description ?? record.desc ?? record.aciklama ?? "")
+  };
+}
+
+function normalizeRecords(list) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.map(normalizeRecord).filter(Boolean).filter(r => {
+    const key = `${r.date}|${r.hours}|${r.description}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((a, b) => String(a.date).localeCompare(String(b.date)) || Number(a.id) - Number(b.id));
+}
+
+function readRecordsFromValue(value) {
+  const parsed = safeJsonParse(value, null);
+  if (Array.isArray(parsed)) return normalizeRecords(parsed);
+  if (parsed && Array.isArray(parsed.records)) return normalizeRecords(parsed.records);
+  if (parsed && parsed.data && Array.isArray(parsed.data.records)) return normalizeRecords(parsed.data.records);
+  return [];
+}
+
+function makeBackupPayload(reason = "auto", recordsList = []) {
+  return {
+    app: "Mesai Takip 2026",
+    version: "V10-yedekli",
+    reason,
+    year: CURRENT_YEAR,
+    recordsKey: RECORDS_KEY,
+    createdAt: new Date().toISOString(),
+    records: normalizeRecords(recordsList)
+  };
+}
+
+function scanAllLocalBackups() {
+  const found = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || !LEGACY_KEY_PREFIXES.some(prefix => key.startsWith(prefix))) continue;
+    const list = readRecordsFromValue(localStorage.getItem(key));
+    if (list.length) found.push({ key, records: list });
+  }
+  return found.sort((a, b) => b.records.length - a.records.length);
+}
+
+function loadInitialRecords() {
+  const current = readRecordsFromValue(localStorage.getItem(RECORDS_KEY));
+  if (current.length) return current;
+
+  const candidates = scanAllLocalBackups();
+  if (candidates.length) {
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(candidates[0].records));
+    localStorage.setItem(LAST_GOOD_BACKUP_KEY, JSON.stringify({
+      ...makeBackupPayload("otomatik-kurtarma", candidates[0].records),
+      recoveredFrom: candidates[0].key
+    }));
+    setTimeout(() => alert(`Eski/yedek kayıt bulundu ve geri yüklendi: ${candidates[0].records.length} kayıt`), 500);
+    return candidates[0].records;
+  }
+
+  return [];
+}
+
+let records = loadInitialRecords();
+
+function saveAutoBackup(reason = "save") {
+  const payload = makeBackupPayload(reason, records);
+  localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(payload));
+  if (payload.records.length) localStorage.setItem(LAST_GOOD_BACKUP_KEY, JSON.stringify(payload));
+}
 
 function saveRecords() {
+  records = normalizeRecords(records);
   localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  saveAutoBackup("save");
+  updateBackupStatus();
+}
+
+function updateBackupStatus() {
+  const el = document.getElementById("backupStatus");
+  if (!el) return;
+  const last = safeJsonParse(localStorage.getItem(LAST_GOOD_BACKUP_KEY), null);
+  if (last?.createdAt) {
+    el.textContent = `Son otomatik yedek: ${new Date(last.createdAt).toLocaleString("tr-TR")} • ${last.records?.length || 0} kayıt`;
+  } else {
+    el.textContent = "Henüz yedek yok. İlk kayıt eklendiğinde otomatik yedek oluşur.";
+  }
+}
+
+function exportBackup() {
+  saveAutoBackup("manual-export");
+  const payload = makeBackupPayload("manual-export", records);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0, 19).replaceAll(":", "-");
+  a.href = url;
+  a.download = `mesai-takip-2026-yedek-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  updateBackupStatus();
+}
+
+function triggerImportBackup() {
+  document.getElementById("backupFileInput")?.click();
+}
+
+function importBackupFile(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const imported = readRecordsFromValue(reader.result);
+    if (!imported.length) {
+      alert("Bu dosyada geçerli mesai kaydı bulunamadı.");
+      input.value = "";
+      return;
+    }
+    if (!confirm(`${imported.length} kayıt geri yüklensin mi? Mevcut kayıtların üzerine yazılır.`)) {
+      input.value = "";
+      return;
+    }
+    records = imported;
+    saveRecords();
+    input.value = "";
+    render();
+    alert("Yedek başarıyla geri yüklendi.");
+  };
+  reader.readAsText(file);
+}
+
+function restoreLastLocalBackup() {
+  const candidates = scanAllLocalBackups();
+  if (!candidates.length) return alert("Bu cihazda geri yüklenecek yerel yedek bulunamadı.");
+  const best = candidates[0];
+  if (!confirm(`${best.records.length} kayıt bulundu. Geri yüklensin mi?`)) return;
+  records = best.records;
+  saveRecords();
+  render();
+  alert("Yerel yedek geri yüklendi.");
 }
 
 function initMonths() {
@@ -651,9 +805,14 @@ function formatDate(dateText) {
 }
 
 function clearAll() {
-  if (!confirm("Tüm kayıtlar silinsin mi?")) return;
+  if (!records.length) return alert("Silinecek kayıt yok.");
+  saveAutoBackup("silmeden-once");
+  const code = prompt("Tüm kayıtları silmek için SİL yaz. Silmeden önce otomatik yerel yedek alındı.");
+  if (code !== "SİL" && code !== "SIL") return;
   records = [];
-  saveRecords();
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(makeBackupPayload("bos-kayit", records)));
+  updateBackupStatus();
   render();
 }
 
@@ -708,4 +867,5 @@ if ("serviceWorker" in navigator) {
 initMonths();
 initNavigation();
 render();
+updateBackupStatus();
 showPage("dashboard");

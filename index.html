@@ -914,12 +914,20 @@
 
       <section id="settings-section" class="card section-anchor">
         <h2>Ayarlar</h2>
-        <p class="small">Bu bölümden uygulama verilerini yönetebilirsin. Silme işlemi sadece bu cihazdaki kayıtları temizler.</p>
-        <button class="danger" onclick="clearAll()">Tüm Kayıtları Sil</button>
+        <p class="small">Bu bölümden uygulama verilerini yönetebilirsin. Kayıtlar cihazda saklanır; bu sürüm otomatik yerel yedek alır ve manuel JSON yedek indirip geri yükleyebilir.</p>
+        <div class="kpi-row compact-info" style="margin-top:12px">
+          <button onclick="exportBackup()">📥 Yedek Al / İndir</button>
+          <button onclick="triggerImportBackup()">📤 Yedekten Geri Yükle</button>
+          <button onclick="restoreLastLocalBackup()">♻️ Cihazdaki Yedeği Kurtar</button>
+          <button class="danger" onclick="clearAll()">Tüm Kayıtları Sil</button>
+        </div>
+        <input id="backupFileInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackupFile(this)">
+        <p id="backupStatus" class="small" style="margin-top:12px">Yedek durumu kontrol ediliyor...</p>
+        <p class="small"><b>Öneri:</b> Her önemli güncellemeden önce “Yedek Al / İndir” butonuna basıp dosyayı iCloud/Google Drive/PC’ye sakla.</p>
       </section>
     </main>
   </div>
   <footer>Mesai Takip • Ana ekrana kurulan mobil PWA</footer>
-  <script src="app.js?v=22"></script>
+  <script src="app.js?v=30"></script>
 </body>
 </html>
