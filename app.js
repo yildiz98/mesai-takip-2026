@@ -1,316 +1,3 @@
-
-// Firebase kullanıcı kayıt/giriş sistemi - Mesai Takip V32 Realtime Database
-const ADMIN_EMAIL = "yildiz.21.98@gmail.com";
-const USER_DOMAIN = "mesai.local";
-const DB_ROOT = "mesaiTakip";
-let auth = null;
-let db = null;
-let currentUser = null;
-let currentProfile = null;
-let appReady = false;
-let remoteSaveTimer = null;
-
-function firebaseReady() {
-  return !!(window.firebase && window.firebaseConfig && window.firebaseConfig.apiKey && window.firebaseConfig.databaseURL);
-}
-
-function initFirebaseApp() {
-  if (!firebaseReady()) {
-    console.warn("Firebase config eksik. firebase-config.js dosyasını doldurun.");
-    return false;
-  }
-  try {
-    if (!firebase.apps.length) firebase.initializeApp(window.firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.database();
-    return true;
-  } catch (err) {
-    console.error("Firebase başlatılamadı", err);
-    return false;
-  }
-}
-
-function nowIso() { return new Date().toISOString(); }
-function cleanKey(value) { return String(value || "").replace(/[.#$\[\]/]/g, "_"); }
-
-function cleanUsername(value) {
-  return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
-}
-
-function usernameToEmail(username) {
-  const u = cleanUsername(username);
-  if (u.includes("@")) return u;
-  return `${u}@${USER_DOMAIN}`;
-}
-
-function emailToUsername(email) {
-  const e = String(email || "").toLowerCase();
-  return e.endsWith(`@${USER_DOMAIN}`) ? e.replace(`@${USER_DOMAIN}`, "") : e;
-}
-
-function authMessage(message, ok = false) {
-  const el = document.getElementById("authStatus");
-  if (!el) return;
-  el.style.color = ok ? "#86efac" : "#fecaca";
-  el.textContent = message || "";
-}
-
-function switchAuthTab(tab) {
-  document.getElementById("loginTab")?.classList.toggle("active", tab === "login");
-  document.getElementById("registerTab")?.classList.toggle("active", tab === "register");
-  document.getElementById("loginForm")?.classList.toggle("active", tab === "login");
-  document.getElementById("registerForm")?.classList.toggle("active", tab === "register");
-  authMessage("");
-}
-window.switchAuthTab = switchAuthTab;
-
-async function registerUser() {
-  if (!auth || !db) return authMessage("Firebase ayarı eksik. firebase-config.js dosyasını kontrol et.");
-  const displayName = document.getElementById("registerName")?.value.trim();
-  const username = cleanUsername(document.getElementById("registerUsername")?.value);
-  const pass = document.getElementById("registerPassword")?.value || "";
-  const pass2 = document.getElementById("registerPassword2")?.value || "";
-  if (!displayName || !username || !pass) return authMessage("Ad soyad, kullanıcı adı ve şifre zorunludur.");
-  if (username.length < 3) return authMessage("Kullanıcı adı en az 3 karakter olmalı.");
-  if (pass.length < 6) return authMessage("Şifre en az 6 karakter olmalı.");
-  if (pass !== pass2) return authMessage("Şifreler aynı değil.");
-  try {
-    const email = usernameToEmail(username);
-    const reservedSnap = await db.ref(`${DB_ROOT}/usernameIndex/${cleanKey(username)}`).get();
-    if (reservedSnap.exists()) return authMessage("Bu kullanıcı adı zaten kayıtlı.");
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    await cred.user.updateProfile({ displayName });
-    const role = email === ADMIN_EMAIL ? "admin" : "personel";
-    const profile = {
-      uid: cred.user.uid, username: emailToUsername(email), email, displayName, role,
-      blocked: false, deleted: false,
-      createdAt: nowIso(), lastLoginAt: nowIso(), updatedAt: nowIso()
-    };
-    await db.ref(`${DB_ROOT}/users/${cred.user.uid}`).update(profile);
-    await db.ref(`${DB_ROOT}/usernameIndex/${cleanKey(username)}`).set(cred.user.uid);
-    authMessage("Kayıt oluşturuldu. Giriş yapılıyor...", true);
-  } catch (err) {
-    authMessage(firebaseErrorTr(err));
-  }
-}
-window.registerUser = registerUser;
-
-async function loginUser() {
-  if (!auth || !db) return authMessage("Firebase ayarı eksik. firebase-config.js dosyasını kontrol et.");
-  const username = document.getElementById("loginUsername")?.value;
-  const pass = document.getElementById("loginPassword")?.value || "";
-  if (!username || !pass) return authMessage("Kullanıcı adı ve şifre yaz.");
-  try {
-    await auth.signInWithEmailAndPassword(usernameToEmail(username), pass);
-  } catch (err) {
-    authMessage(firebaseErrorTr(err));
-  }
-}
-window.loginUser = loginUser;
-
-async function logoutUser() {
-  if (auth) await auth.signOut();
-  location.reload();
-}
-window.logoutUser = logoutUser;
-
-async function forgotPassword() {
-  if (!auth) return authMessage("Firebase ayarı eksik.");
-  const username = document.getElementById("loginUsername")?.value || prompt("Kullanıcı adını veya mail adresini yaz:");
-  if (!username) return;
-  const email = usernameToEmail(username);
-  if (email.endsWith(`@${USER_DOMAIN}`)) return authMessage("Kullanıcı adı ile açılan hesaplarda şifre sıfırlama maili çalışmaz. Yeni şifre için admin yeni hesap açmalı veya Firebase Authentication üzerinden işlem yapılmalı.");
-  try {
-    await auth.sendPasswordResetEmail(email);
-    authMessage("Şifre sıfırlama maili gönderildi.", true);
-  } catch (err) { authMessage(firebaseErrorTr(err)); }
-}
-window.forgotPassword = forgotPassword;
-
-function firebaseErrorTr(err) {
-  const code = err?.code || "";
-  if (code.includes("email-already-in-use")) return "Bu kullanıcı adı zaten kayıtlı.";
-  if (code.includes("invalid-email")) return "Kullanıcı adı formatı uygun değil.";
-  if (code.includes("weak-password")) return "Şifre en az 6 karakter olmalı.";
-  if (code.includes("user-not-found") || code.includes("wrong-password") || code.includes("invalid-credential")) return "Kullanıcı adı veya şifre hatalı.";
-  if (code.includes("network")) return "İnternet bağlantısını kontrol et.";
-  if (code.includes("permission-denied")) return "Firebase Realtime Database izinleri kapalı. Rules bölümünü kontrol et.";
-  return err?.message || "İşlem başarısız oldu.";
-}
-
-function userRef(uid = currentUser?.uid) { return uid ? db?.ref(`${DB_ROOT}/users/${uid}`) : null; }
-function recordsRef(uid = currentUser?.uid) { return uid ? db?.ref(`${DB_ROOT}/mesailer/${uid}/${CURRENT_YEAR}`) : null; }
-
-async function ensureUserProfile(user) {
-  const email = String(user.email || "").toLowerCase();
-  const ref = userRef(user.uid);
-  const snap = await ref.get();
-  const base = snap.exists() ? (snap.val() || {}) : {};
-  const role = email === ADMIN_EMAIL ? "admin" : (base.role || "personel");
-  const profile = {
-    uid: user.uid,
-    username: base.username || emailToUsername(email),
-    email,
-    displayName: base.displayName || user.displayName || emailToUsername(email),
-    role,
-    blocked: !!base.blocked,
-    deleted: !!base.deleted,
-    createdAt: base.createdAt || nowIso(),
-    lastLoginAt: nowIso(),
-    updatedAt: nowIso()
-  };
-  await ref.update(profile);
-  await db.ref(`${DB_ROOT}/usernameIndex/${cleanKey(profile.username)}`).set(user.uid).catch(()=>{});
-  return profile;
-}
-
-async function loadRemoteRecords() {
-  if (!recordsRef()) return;
-  const snap = await recordsRef().get();
-  const data = snap.exists() ? snap.val() : null;
-  if (data && Array.isArray(data.records)) {
-    records = normalizeRecords(data.records);
-    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
-  } else {
-    records = normalizeRecords(records);
-    await saveRecordsRemoteNow("first-sync");
-  }
-}
-
-async function saveRecordsRemoteNow(reason = "save") {
-  if (!recordsRef() || !currentProfile || currentProfile.blocked || currentProfile.deleted) return;
-  await recordsRef().update({
-    uid: currentUser.uid,
-    year: CURRENT_YEAR,
-    records: normalizeRecords(records),
-    updatedAt: nowIso(),
-    reason
-  });
-}
-
-function queueRemoteSave(reason = "save") {
-  if (!db || !currentUser) return;
-  clearTimeout(remoteSaveTimer);
-  remoteSaveTimer = setTimeout(() => saveRecordsRemoteNow(reason).catch(console.error), 350);
-}
-
-function updateUserHeader() {
-  const el = document.getElementById("userInfo");
-  if (!el) return;
-  if (!currentProfile) { el.textContent = "Giriş bekleniyor"; return; }
-  const badge = currentProfile.role === "admin" ? " <span class='admin-badge'>Admin</span>" : " <span class='admin-badge'>Personel</span>";
-  el.innerHTML = `<strong>${escapeHtml(currentProfile.displayName || currentProfile.username)}</strong>${badge}`;
-}
-
-function setAppVisible(visible) {
-  document.getElementById("authScreen")?.classList.toggle("hidden", !!visible);
-  document.querySelector(".app-shell")?.classList.toggle("page-hidden", !visible);
-}
-
-async function initAuthFlow() {
-  const ok = initFirebaseApp();
-  if (!ok) {
-    setAppVisible(false);
-    authMessage("Firebase config eksik. firebase-config.js içine SmartApart Firebase bilgileri yerleştirildi mi kontrol et.");
-    return;
-  }
-  setAppVisible(false);
-  auth.onAuthStateChanged(async user => {
-    try {
-      if (!user) { currentUser = null; currentProfile = null; setAppVisible(false); return; }
-      currentUser = user;
-      currentProfile = await ensureUserProfile(user);
-      if (currentProfile.blocked || currentProfile.deleted) {
-        authMessage("Bu hesap admin tarafından engellenmiş veya silinmiş.");
-        await auth.signOut();
-        return;
-      }
-      await loadRemoteRecords();
-      appReady = true;
-      setAppVisible(true);
-      updateUserHeader();
-      initMonths();
-      initNavigation();
-      render();
-      updateBackupStatus();
-      if (currentProfile.role === "admin") {
-        document.getElementById("adminMenuBtn")?.classList.remove("page-hidden");
-        listenAdminUsers();
-      }
-      showPage("dashboard");
-    } catch (err) {
-      console.error(err);
-      authMessage("Giriş sırasında hata oluştu: " + (err.message || err));
-    }
-  });
-}
-
-let adminUnsubRef = null;
-function listenAdminUsers() {
-  if (!db || currentProfile?.role !== "admin") return;
-  if (adminUnsubRef) adminUnsubRef.off();
-  adminUnsubRef = db.ref(`${DB_ROOT}/users`);
-  adminUnsubRef.on("value", snap => {
-    const val = snap.val() || {};
-    const users = Object.entries(val).map(([id, u]) => ({ id, ...(u || {}) }))
-      .sort((a,b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
-    renderAdminUsers(users);
-  }, err => console.error(err));
-}
-
-function dateFromTs(ts) {
-  if (!ts) return "-";
-  const d = new Date(ts);
-  return isNaN(d) ? "-" : d.toLocaleString("tr-TR");
-}
-
-function renderAdminUsers(users) {
-  const activeUsers = users.filter(u => !u.deleted);
-  setText("adminTotalUsers", String(activeUsers.length));
-  setText("adminCount", String(activeUsers.filter(u => u.role === "admin").length));
-  setText("personelCount", String(activeUsers.filter(u => (u.role || "personel") !== "admin").length));
-  setText("blockedCount", String(activeUsers.filter(u => u.blocked).length));
-  const table = document.getElementById("adminUsersTable");
-  if (!table) return;
-  table.innerHTML = activeUsers.map(u => {
-    const isSelf = u.uid === currentUser?.uid;
-    const role = u.role === "admin" ? "admin" : "personel";
-    const blocked = !!u.blocked;
-    return `<tr>
-      <td><strong>${escapeHtml(u.username || emailToUsername(u.email))}</strong><br><small>${escapeHtml(u.email || "")}</small></td>
-      <td>${escapeHtml(u.displayName || "-")}</td>
-      <td><span class="pill ${role}">${role === "admin" ? "Admin" : "Personel"}</span></td>
-      <td><span class="pill ${blocked ? "blocked" : "personel"}">${blocked ? "Engelli" : "Aktif"}</span></td>
-      <td>${dateFromTs(u.lastLoginAt)}</td>
-      <td>${dateFromTs(u.createdAt)}</td>
-      <td><div class="mini-actions">
-        <button type="button" onclick="setUserRole('${u.uid}','${role === "admin" ? "personel" : "admin"}')" ${isSelf ? "disabled" : ""}>${role === "admin" ? "Personel Yap" : "Admin Yap"}</button>
-        <button type="button" onclick="toggleUserBlock('${u.uid}',${!blocked})" ${isSelf ? "disabled" : ""}>${blocked ? "Aç" : "Engelle"}</button>
-        <button class="danger" type="button" onclick="softDeleteUser('${u.uid}')" ${isSelf ? "disabled" : ""}>Sil</button>
-      </div></td>
-    </tr>`;
-  }).join("") || `<tr><td colspan="7">Kullanıcı bulunamadı.</td></tr>`;
-}
-
-async function setUserRole(uid, role) {
-  if (currentProfile?.role !== "admin") return;
-  await userRef(uid).update({ role, updatedAt: nowIso() });
-}
-window.setUserRole = setUserRole;
-
-async function toggleUserBlock(uid, blocked) {
-  if (currentProfile?.role !== "admin") return;
-  await userRef(uid).update({ blocked, updatedAt: nowIso() });
-}
-window.toggleUserBlock = toggleUserBlock;
-
-async function softDeleteUser(uid) {
-  if (currentProfile?.role !== "admin") return;
-  if (!confirm("Bu kullanıcı uygulama içinden silinmiş işaretlenecek ve giriş yapması engellenecek. Devam edilsin mi?")) return;
-  await userRef(uid).update({ deleted: true, blocked: true, updatedAt: nowIso() });
-}
-window.softDeleteUser = softDeleteUser;
-
 const CURRENT_YEAR = new Date().getFullYear();
 
 const months = [
@@ -529,7 +216,6 @@ function saveRecords() {
   localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
   saveAutoBackup("save");
   updateBackupStatus();
-  queueRemoteSave("save");
 }
 
 function updateBackupStatus() {
@@ -1126,7 +812,6 @@ function clearAll() {
   records = [];
   localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
   localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(makeBackupPayload("bos-kayit", records)));
-  queueRemoteSave("clear-all");
   updateBackupStatus();
   render();
 }
@@ -1140,13 +825,12 @@ function showPage(page = "dashboard") {
     summary: ["summary-section"],
     charts: ["charts-section"],
     history: ["history-section"],
-    settings: ["settings-section"],
-    admin: ["admin-section"]
+    settings: ["settings-section"]
   };
 
   const allSections = [
     "dashboard", "dashboard-recent", "entry-section", "charts-section", "month-summary-section",
-    "records-section", "summary-section", "history-section", "settings-section", "admin-section"
+    "records-section", "summary-section", "history-section", "settings-section"
   ];
 
   allSections.forEach(id => {
@@ -1177,7 +861,11 @@ function initNavigation() {
 }
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=31");
+  navigator.serviceWorker.register("sw.js?v=21");
 }
 
-initAuthFlow();
+initMonths();
+initNavigation();
+render();
+updateBackupStatus();
+showPage("dashboard");
