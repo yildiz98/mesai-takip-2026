@@ -781,7 +781,10 @@
         <button id="registerTab" class="secondary" type="button" onclick="setAuthMode('register')">Kayıt Ol</button>
       </div>
       <div id="nameWrap" style="display:none"><label>Ad Soyad</label><input id="authName" type="text" placeholder="Ad Soyad"></div>
-      <label>Kullanıcı Adı</label><input id="authUsername" type="text" autocomplete="username" placeholder="Örn: admin">
+      <label>Kullanıcı Adı</label><input
+  id="authUsername"
+  type="text"
+  placeholder="Kullanıcı adınızı girin">
       <label>Şifre</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Şifre">
       <button id="authSubmit" type="button" onclick="submitAuth()">Giriş Yap</button>
       <button class="secondary" type="button" onclick="resetPasswordByUsername()" style="background:#07162c;color:var(--gold-2);border:1px solid var(--line);box-shadow:none">Şifremi Unuttum</button>
