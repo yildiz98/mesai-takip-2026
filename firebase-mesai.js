@@ -57,6 +57,8 @@ function setAuthMode(mode) {
   if (loginBtn) loginBtn.classList.toggle("ghost", mode !== "login");
   if (registerBtn) registerBtn.classList.toggle("ghost", mode !== "register");
   if (submitBtn) submitBtn.textContent = mode === "register" ? "Kayıt Ol" : "Giriş Yap";
+  const regAction = document.getElementById("registerActionBtn");
+  if (regAction) regAction.style.display = mode === "register" ? "none" : "block";
 }
 function submitAuth() {
   return loginOrRegister();

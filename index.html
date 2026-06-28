@@ -733,7 +733,7 @@
     }
 
 
-    /* Firebase giriş ekranı düzeltmesi */
+    /* Premium Firebase giriş ekranı - Lacivert / Altın */
     .auth-screen{
       position:fixed;
       inset:0;
@@ -742,61 +742,204 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:20px;
-      background:radial-gradient(circle at top, rgba(244,176,0,.18), transparent 30%), linear-gradient(135deg,#030b16 0%,#061326 55%,#020712 100%);
+      padding:18px;
+      background:
+        radial-gradient(circle at top center, rgba(244,176,0,.18), transparent 31%),
+        radial-gradient(circle at bottom right, rgba(244,176,0,.10), transparent 24%),
+        linear-gradient(135deg,#020712 0%,#061326 52%,#020712 100%);
+      overflow:auto;
     }
     .auth-card{
       width:100%;
-      max-width:390px;
-      padding:22px;
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(15,42,77,.97), rgba(8,27,53,.97));
-      border:1px solid rgba(244,176,0,.45);
-      box-shadow:0 18px 45px rgba(0,0,0,.45);
+      max-width:560px;
+      padding:34px 42px 24px;
+      border-radius:32px;
+      background:
+        radial-gradient(circle at top, rgba(244,176,0,.08), transparent 28%),
+        linear-gradient(180deg, rgba(9,31,60,.98), rgba(3,14,29,.98));
+      border:1.5px solid rgba(244,176,0,.75);
+      box-shadow:0 24px 70px rgba(0,0,0,.58), inset 0 0 35px rgba(244,176,0,.045);
       text-align:left;
+      position:relative;
     }
-    .auth-card .logo{width:78px;margin:0 auto 10px;display:block;}
-    .auth-card h1{text-align:center;margin:0 0 6px;color:var(--gold-2);font-size:24px;}
-    .auth-note{text-align:center;color:var(--muted);font-size:13px;line-height:1.4;}
-    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
-    .auth-tabs button{margin:0;}
-    .auth-card button.secondary,.auth-tabs button.secondary,.auth-tabs button.ghost{background:#07162c!important;color:var(--gold-2)!important;border:1px solid var(--line)!important;box-shadow:none!important;}
-    .auth-error{display:none;margin-top:12px;padding:11px;border-radius:12px;background:rgba(220,38,38,.14);border:1px solid rgba(220,38,38,.35);color:#fecaca;font-weight:bold;text-align:center;font-size:13px;}
+    .auth-card .logo{
+      width:134px;
+      max-width:42vw;
+      margin:0 auto 14px;
+      display:block;
+      filter:drop-shadow(0 0 18px rgba(244,176,0,.34));
+    }
+    .auth-card h1{
+      text-align:center;
+      margin:0 0 10px;
+      color:var(--gold-2);
+      font-size:42px;
+      line-height:1;
+      letter-spacing:.2px;
+      text-shadow:0 0 18px rgba(244,176,0,.22);
+    }
+    .auth-note{
+      text-align:center;
+      color:#f3f6fb;
+      font-size:18px;
+      line-height:1.45;
+      margin:0 0 22px;
+    }
+    .auth-tabs{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin:20px 0 0;
+    }
+    .auth-tabs button{display:none!important;}
+    .auth-card label{
+      color:#fff;
+      font-size:18px;
+      font-weight:900;
+      margin-top:18px;
+      margin-bottom:8px;
+    }
+    .auth-card input{
+      min-height:58px;
+      border-radius:16px;
+      border:1.5px solid rgba(244,176,0,.82);
+      background:#06162c;
+      color:#fff;
+      font-size:17px;
+      padding:13px 16px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .auth-card input::placeholder{color:#8794a8;}
+    .auth-card input:focus{
+      border-color:#ffc21a;
+      box-shadow:0 0 0 3px rgba(244,176,0,.16), 0 0 22px rgba(244,176,0,.08);
+    }
+    #authSubmit{
+      min-height:62px;
+      border-radius:17px;
+      margin-top:22px;
+      font-size:22px;
+      background:linear-gradient(135deg,#ffd15c 0%,#f4b000 45%,#d99000 100%);
+      color:#061326;
+      box-shadow:0 14px 26px rgba(244,176,0,.25);
+    }
+    #authSubmit::before{content:'↪ ';font-size:24px;}
+    #registerActionBtn{
+      min-height:58px;
+      border-radius:17px;
+      margin-top:10px;
+      font-size:21px;
+      background:#07162c!important;
+      color:var(--gold-2)!important;
+      border:1.5px solid rgba(244,176,0,.75)!important;
+      box-shadow:none!important;
+    }
+    #registerActionBtn::before{content:'👤+ ';}
+    .auth-card button.secondary,.auth-tabs button.secondary,.auth-tabs button.ghost{
+      background:#07162c!important;
+      color:var(--gold-2)!important;
+      border:1px solid var(--line)!important;
+      box-shadow:none!important;
+    }
+    .auth-update{
+      margin-top:28px!important;
+      padding:18px 20px!important;
+      border:1.5px solid rgba(244,176,0,.74)!important;
+      border-radius:18px!important;
+      background:linear-gradient(180deg, rgba(4,18,36,.95), rgba(3,13,27,.95))!important;
+      font-size:17px!important;
+      line-height:1.55!important;
+      color:#fff!important;
+      box-shadow:inset 0 0 28px rgba(244,176,0,.035);
+    }
+    .auth-update strong{
+      color:var(--gold-2);
+      font-size:21px;
+      display:block;
+      margin-bottom:4px;
+    }
+    .auth-update b{color:var(--gold-2);}
+    .auth-error{
+      display:none;
+      margin-top:12px;
+      padding:11px;
+      border-radius:12px;
+      background:rgba(220,38,38,.14);
+      border:1px solid rgba(220,38,38,.35);
+      color:#fecaca;
+      font-weight:bold;
+      text-align:center;
+      font-size:13px;
+    }
+    .auth-credit{
+      margin-top:25px;
+      text-align:right;
+      color:var(--gold-2);
+      font-size:18px;
+      font-weight:500;
+      position:relative;
+      padding-top:13px;
+    }
+    .auth-credit::before{
+      content:'';
+      position:absolute;
+      left:0;
+      top:0;
+      width:62%;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(244,176,0,.9));
+    }
+    .auth-credit b{font-weight:900;}
     body:not(.auth-ok) header,
     body:not(.auth-ok) .app-shell,
     body:not(.auth-ok) footer{display:none!important;}
     body.auth-ok #authScreen{display:none!important;}
-
+    @media (max-width:620px){
+      .auth-screen{align-items:flex-start;padding:18px 12px;}
+      .auth-card{max-width:420px;padding:22px 18px 18px;border-radius:24px;}
+      .auth-card .logo{width:92px;}
+      .auth-card h1{font-size:30px;}
+      .auth-note{font-size:14px;margin-bottom:14px;}
+      .auth-card label{font-size:14px;margin-top:12px;}
+      .auth-card input{min-height:48px;font-size:14px;border-radius:12px;}
+      #authSubmit,#registerActionBtn{min-height:50px;font-size:16px;border-radius:13px;}
+      .auth-update{font-size:13px!important;padding:13px!important;border-radius:14px!important;line-height:1.48!important;}
+      .auth-update strong{font-size:16px;}
+      .auth-credit{font-size:13px;}
+    }
   </style>
 </head>
 <body>
 
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
-      <img class="logo" src="polis-logo.png" alt="Logo">
+      <img class="logo" src="polis-logo.png" alt="Polis Logo">
       <h1>Mesai Takip</h1>
-      <p class="auth-note">Kullanıcı adı ve şifre ile giriş yap. E-posta yazmana gerek yok.</p>
+      <p class="auth-note">Kullanıcı adınız ve şifreniz ile giriş yapın.</p>
       <div class="auth-tabs">
         <button id="loginTab" type="button" onclick="setAuthMode('login')">Giriş Yap</button>
         <button id="registerTab" class="secondary" type="button" onclick="setAuthMode('register')">Kayıt Ol</button>
       </div>
-      <div id="nameWrap" style="display:none"><label>Ad Soyad</label><input id="authName" type="text" placeholder="Ad Soyad"></div>
-      <label>Kullanıcı Adı</label><input
-  id="authUsername"
-  type="text"
-  placeholder="Kullanıcı adınızı girin">
-      <label>Şifre</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Şifre">
+      <div id="nameWrap" style="display:none">
+        <label>Ad Soyad</label>
+        <input id="authName" type="text" placeholder="Adınızı ve soyadınızı girin">
+      </div>
+      <label>Kullanıcı Adı</label>
+      <input id="authUsername" type="text" autocomplete="username" placeholder="Kullanıcı adınızı girin">
+      <label>Şifre</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Şifrenizi girin">
       <button id="authSubmit" type="button" onclick="submitAuth()">Giriş Yap</button>
-      <button class="secondary" type="button" onclick="resetPasswordByUsername()" style="background:#07162c;color:var(--gold-2);border:1px solid var(--line);box-shadow:none">Şifremi Unuttum</button>
-      
-<div class="auth-update" style="margin-top:16px;padding:12px;border:1px solid rgba(244,176,0,.35);border-radius:12px;background:rgba(244,176,0,.08);font-size:13px;line-height:1.5;text-align:left;">
-<strong>📢 Sistem Güncellendi</strong><br>
-Mesai Takip uygulaması güvenlik ve veri koruması amacıyla güncellenmiştir.<br>
-Lütfen <b>Kayıt Ol</b> bölümünden kendinize bir kullanıcı adı ve şifre oluşturunuz.<br>
-Bundan sonra tüm mesai kayıtlarınız güvenli şekilde bulutta saklanacak ve telefon değiştirseniz bile hesabınıza giriş yaparak verilerinize erişebileceksiniz.
-</div>
+      <button id="registerActionBtn" type="button" onclick="setAuthMode('register')">Kayıt Ol</button>
 
-<div id="authError" class="auth-error"></div>
+      <div class="auth-update">
+        <strong>📢 Sistem Güncellendi</strong>
+        Mesai Takip uygulaması güvenlik ve veri koruması amacıyla güncellenmiştir.<br>
+        Lütfen <b>Kayıt Ol</b> bölümünden kendinize bir kullanıcı adı ve şifre oluşturunuz.<br>
+        Bundan sonra tüm mesai kayıtlarınız güvenli şekilde bulutta saklanacak ve telefon değiştirseniz bile hesabınıza giriş yaparak verilerinize erişebileceksiniz.
+      </div>
+
+      <div id="authError" class="auth-error"></div>
+      <div class="auth-credit">Hazırlayan <b>PM.Hüseyin YILDIZ</b></div>
     </div>
   </div>
 
