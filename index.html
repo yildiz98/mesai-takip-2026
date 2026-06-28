@@ -732,21 +732,69 @@
       header h1{font-size:18px!important;}
     }
 
-  
-    /* Firebase kullanıcı giriş ekranı */
-    .auth-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at top,rgba(244,176,0,.16),transparent 30%),linear-gradient(135deg,#020712,#061326 55%,#020712);}
-    .auth-card{width:min(440px,100%);background:linear-gradient(180deg,rgba(15,42,77,.98),rgba(8,27,53,.98));border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.45);}
-    .auth-card .logo{width:96px}.auth-card h2{justify-content:center;font-size:24px;margin:8px 0 4px}.auth-card h2::before{display:none}.auth-card p{text-align:center;color:var(--muted);margin:6px 0 16px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.auth-tabs button{margin:0}.auth-tabs button.passive{background:rgba(7,22,44,.65);color:var(--text);border:1px solid rgba(244,176,0,.25);box-shadow:none}.auth-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.auth-msg{min-height:22px;margin-top:10px;text-align:center;font-weight:bold}.link-btn{background:transparent!important;color:var(--gold-2)!important;border:0!important;box-shadow:none!important;margin-top:4px}.hidden{display:none!important}.userbar{max-width:1440px;margin:10px auto 0;padding:0 14px;display:flex;gap:8px;align-items:center;justify-content:flex-end}.user-pill{background:rgba(15,42,77,.95);border:1px solid var(--line);border-radius:999px;padding:9px 12px;color:var(--gold-2);font-weight:bold}.userbar button{width:auto;margin:0;padding:9px 12px}.admin-table select,.admin-table button{font-size:13px;padding:8px;margin:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(244,176,0,.15);color:var(--gold-2);font-weight:bold;font-size:12px}.badge.red{background:rgba(220,38,38,.16);color:#fecaca}.badge.green{background:rgba(34,197,94,.14);color:#86efac}
+
+    /* Firebase kullanıcı girişi ve admin paneli */
+    .auth-screen{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at top,rgba(244,176,0,.18),transparent 32%),linear-gradient(135deg,#020712,#061326 60%,#020712);}
+    .auth-screen.hidden{display:none!important;}
+    .auth-card{width:min(460px,100%);background:linear-gradient(180deg,rgba(15,42,77,.98),rgba(8,27,53,.98));border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.45);}
+    .auth-card .logo{width:92px;margin-bottom:12px;}
+    .auth-card h2{justify-content:center;font-size:24px;margin-bottom:4px;}
+    .auth-card h2::before{content:"🔐";}
+    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
+    .auth-tabs button{margin:0;background:rgba(7,22,44,.7);color:#fff;border:1px solid rgba(244,176,0,.25);box-shadow:none;}
+    .auth-tabs button.active{background:linear-gradient(135deg,var(--gold),#d99400);color:#07111f;}
+    .auth-form{display:none;}.auth-form.active{display:block;}
+    .auth-status{margin-top:10px;text-align:center;font-weight:bold;color:#fecaca;min-height:20px;}
+    .top-user{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:9px;color:var(--muted);font-size:12px;}
+    .top-user strong{color:var(--gold-2);}.top-user button{width:auto;margin:0;padding:7px 10px;font-size:12px;border-radius:10px;}
+    .admin-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(244,176,0,.14);border:1px solid rgba(244,176,0,.35);color:var(--gold-2);font-weight:900;}
+    .admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0;}
+    .admin-table td,.admin-table th{font-size:12px;}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:900;font-size:11px}.pill.admin{background:rgba(244,176,0,.16);color:var(--gold-2);}.pill.personel{background:rgba(96,165,250,.16);color:#bfdbfe}.pill.blocked{background:rgba(220,38,38,.16);color:#fecaca}.mini-actions{display:flex;gap:6px;flex-wrap:wrap}.mini-actions button{width:auto;margin:0;padding:7px 8px;font-size:11px;border-radius:9px}.text-link{background:transparent!important;color:var(--gold-2)!important;border:0!important;box-shadow:none!important;width:auto!important;padding:6px!important;}
+    @media(max-width:760px){.admin-grid{grid-template-columns:1fr 1fr}.admin-table{min-width:820px}.auth-card{padding:18px}.top-user{font-size:10px}.top-user button{padding:6px 8px}}
 
   </style>
 </head>
 <body>
+
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <img class="logo" src="polis-logo.png" alt="Polis Logo">
+      <h2>MESAİ TAKİP GİRİŞ</h2>
+      <p class="small" style="text-align:center">Kullanıcı adı ve şifre ile giriş yap.</p>
+      <div class="auth-tabs">
+        <button id="loginTab" class="active" type="button" onclick="switchAuthTab('login')">Giriş Yap</button>
+        <button id="registerTab" type="button" onclick="switchAuthTab('register')">Kayıt Ol</button>
+      </div>
+      <div id="loginForm" class="auth-form active">
+        <label>Kullanıcı Adı</label>
+        <input id="loginUsername" autocomplete="username" placeholder="Örn: huseyin98">
+        <label>Şifre</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Şifren">
+        <button type="button" onclick="loginUser()">Giriş Yap</button>
+      </div>
+      <div id="registerForm" class="auth-form">
+        <label>Ad Soyad</label>
+        <input id="registerName" autocomplete="name" placeholder="Ad Soyad">
+        <label>Kullanıcı Adı</label>
+        <input id="registerUsername" autocomplete="username" placeholder="Örn: personel01">
+        <label>Şifre</label>
+        <input id="registerPassword" type="password" autocomplete="new-password" placeholder="En az 6 karakter">
+        <label>Şifre Tekrar</label>
+        <input id="registerPassword2" type="password" autocomplete="new-password" placeholder="Şifre tekrar">
+        <button type="button" onclick="registerUser()">Kayıt Oluştur</button>
+      </div>
+      <button class="text-link" type="button" onclick="forgotPassword()">Şifremi Unuttum</button>
+      <div id="authStatus" class="auth-status"></div>
+      <p class="small" style="text-align:center;margin-top:10px">Admin hesabı: <strong>yildiz.21.98@gmail.com</strong></p>
+    </div>
+  </div>
+
   <header>
     <img class="logo" src="polis-logo.png" alt="Polis Logo">
     <div class="header-title">
       <h1>MESAİ TAKİP</h1>
     </div>
-    <div class="author">Hazırlayan PM. Hüseyin YILDIZ</div>
+    <div><div class="author">Hazırlayan PM. Hüseyin YILDIZ</div><div class="top-user"><span id="userInfo">Giriş bekleniyor</span><button type="button" onclick="logoutUser()">Çıkış</button></div></div>
   </header>
 
   <div class="app-shell">
@@ -758,6 +806,7 @@
         <a class="menu-btn" href="#records-section" data-page="records"><span class="nav-icon">📅</span><span>Bu Ay</span></a>
         <a class="menu-btn" href="#charts-section" data-page="charts"><span class="nav-icon">📊</span><span>Grafikler</span></a>
         <a class="menu-btn" href="#settings-section" data-page="settings"><span class="nav-icon">⚙️</span><span>Ayarlar</span></a>
+        <a id="adminMenuBtn" class="menu-btn page-hidden" href="#admin-section" data-page="admin"><span class="nav-icon">🛡️</span><span>Admin</span></a>
       </div>
     </aside>
 
@@ -831,7 +880,7 @@
         <input type="text" id="descInput" placeholder="Örn: Gece devriyesi, maç görevi, yol emniyeti..." />
 
         <button onclick="addRecord()">Kaydet</button>
-        <p class="small">Açıklama alanına hangi mesaiye gittiğini yazabilirsin. Kayıtlar telefonda saklanır.</p>
+        <p class="small">Açıklama alanına hangi mesaiye gittiğini yazabilirsin. Kayıtlar giriş yapan kullanıcı hesabına bağlı saklanır.</p>
       </section>
 
 
@@ -918,9 +967,29 @@
         <div id="historyDetail"></div>
       </section>
 
+
+      <section id="admin-section" class="card section-anchor page-hidden">
+        <h2>Admin Paneli</h2>
+        <p class="small">Bu panel sadece admin yetkili hesaplarda görünür. Kullanıcı silme/engelleme işlemleri uygulama içi erişimi kapatır.</p>
+        <div class="admin-grid">
+          <div class="dashbox"><small>Toplam Kullanıcı</small><span id="adminTotalUsers">0</span><em>Kayıtlı hesap</em></div>
+          <div class="dashbox"><small>Admin</small><span id="adminCount">0</span><em>Yetkili hesap</em></div>
+          <div class="dashbox"><small>Personel</small><span id="personelCount">0</span><em>Standart kullanıcı</em></div>
+          <div class="dashbox"><small>Engelli</small><span id="blockedCount">0</span><em>Erişimi kapalı</em></div>
+        </div>
+        <div class="wide">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Kullanıcı</th><th>Ad Soyad</th><th>Rol</th><th>Durum</th><th>Son Giriş</th><th>Kayıt Tarihi</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="adminUsersTable"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section id="settings-section" class="card section-anchor">
         <h2>Ayarlar</h2>
-        <p class="small">Bu bölümden uygulama verilerini yönetebilirsin. Kayıtlar cihazda saklanır; bu sürüm otomatik yerel yedek alır ve manuel JSON yedek indirip geri yükleyebilir.</p>
+        <p class="small">Bu bölümden uygulama verilerini yönetebilirsin. Kayıtlar Firebase hesabına bağlı saklanır; ayrıca cihazda otomatik yerel yedek alır ve manuel JSON yedek indirip geri yükleyebilir.</p>
         <div class="kpi-row compact-info" style="margin-top:12px">
           <button onclick="exportBackup()">📥 Yedek Al / İndir</button>
           <button onclick="triggerImportBackup()">📤 Yedekten Geri Yükle</button>
@@ -934,10 +1003,10 @@
     </main>
   </div>
   <footer>Mesai Takip • Ana ekrana kurulan mobil PWA</footer>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=1"></script>
-  <script src="app.js?v=31"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-database-compat.js"></script>
+  <script src="firebase-config.js?v=32"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>

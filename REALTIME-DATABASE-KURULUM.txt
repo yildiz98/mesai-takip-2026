@@ -1,0 +1,41 @@
+MESAİ TAKİP 2026 - SMARTAPART FIREBASE REALTIME DATABASE SÜRÜMÜ
+
+Bu paket Firestore kullanmaz. SmartApart Firebase projesindeki Realtime Database'i kullanır.
+Veriler SmartApart'tan ayrıdır ve şu yol altında tutulur:
+
+mesaiTakip/
+  users/
+  usernameIndex/
+  mesailer/
+
+GEREKLİ FIREBASE AYARLARI
+
+1) Firebase Console > smartapart-46e77 projesine gir.
+2) Build > Authentication > Sign-in method
+3) Email/Password sağlayıcısını Enabled yap.
+4) Build > Realtime Database bölümünde database zaten açıksa tamam.
+5) Rules kısmına test için aşağıdaki kuralları koyabilirsin:
+
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null"
+  }
+}
+
+Not: Bu kural giriş yapan kullanıcıların veritabanına erişmesine izin verir.
+Daha gelişmiş güvenlik kuralı sonraki aşamada ayrıca düzenlenebilir.
+
+ADMIN HESABI
+
+Admin maili kodda şu şekilde ayarlı:
+yildiz.21.98@gmail.com
+
+Önemli: Kullanıcı adı ile giriş sistemi arka planda şu formatı kullanır:
+kullaniciadi@mesai.local
+
+Sen admin hesabını gerçek mail ile kullanmak istersen giriş ekranına kullanıcı adı yerine direkt:
+yildiz.21.98@gmail.com
+yazıp şifrenle giriş yapabilirsin.
+
+GitHub'a yüklemek için zip içindeki dosyaları mevcut projenin üzerine at.

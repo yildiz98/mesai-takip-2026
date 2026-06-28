@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function adminEmail() { return request.auth.token.email == 'yildiz.21.98@gmail.com'; }
+    function isAdmin() {
+      return signedIn() && (adminEmail() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    function protectedFieldsUnchanged() {
+      return request.resource.data.role == resource.data.role
+        && request.resource.data.blocked == resource.data.blocked
+        && request.resource.data.deleted == resource.data.deleted;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if signedIn() && request.auth.uid == userId
+        && (request.resource.data.role == 'personel' || (adminEmail() && request.resource.data.role == 'admin'));
+      allow update: if signedIn() && (isAdmin() || (request.auth.uid == userId && protectedFieldsUnchanged()));
+      allow delete: if isAdmin();
+    }
+
+    match /mesaiRecords/{userId}/years/{yearId} {
+      allow read, write: if signedIn() && (request.auth.uid == userId || isAdmin());
+    }
+  }
+}
