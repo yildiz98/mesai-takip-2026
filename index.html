@@ -732,6 +732,12 @@
       header h1{font-size:18px!important;}
     }
 
+  
+    /* Firebase kullanıcı giriş ekranı */
+    .auth-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at top,rgba(244,176,0,.16),transparent 30%),linear-gradient(135deg,#020712,#061326 55%,#020712);}
+    .auth-card{width:min(440px,100%);background:linear-gradient(180deg,rgba(15,42,77,.98),rgba(8,27,53,.98));border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.45);}
+    .auth-card .logo{width:96px}.auth-card h2{justify-content:center;font-size:24px;margin:8px 0 4px}.auth-card h2::before{display:none}.auth-card p{text-align:center;color:var(--muted);margin:6px 0 16px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.auth-tabs button{margin:0}.auth-tabs button.passive{background:rgba(7,22,44,.65);color:var(--text);border:1px solid rgba(244,176,0,.25);box-shadow:none}.auth-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.auth-msg{min-height:22px;margin-top:10px;text-align:center;font-weight:bold}.link-btn{background:transparent!important;color:var(--gold-2)!important;border:0!important;box-shadow:none!important;margin-top:4px}.hidden{display:none!important}.userbar{max-width:1440px;margin:10px auto 0;padding:0 14px;display:flex;gap:8px;align-items:center;justify-content:flex-end}.user-pill{background:rgba(15,42,77,.95);border:1px solid var(--line);border-radius:999px;padding:9px 12px;color:var(--gold-2);font-weight:bold}.userbar button{width:auto;margin:0;padding:9px 12px}.admin-table select,.admin-table button{font-size:13px;padding:8px;margin:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(244,176,0,.15);color:var(--gold-2);font-weight:bold;font-size:12px}.badge.red{background:rgba(220,38,38,.16);color:#fecaca}.badge.green{background:rgba(34,197,94,.14);color:#86efac}
+
   </style>
 </head>
 <body>
@@ -928,6 +934,10 @@
     </main>
   </div>
   <footer>Mesai Takip • Ana ekrana kurulan mobil PWA</footer>
-  <script src="app.js?v=30"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js?v=1"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>

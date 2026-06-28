@@ -1,0 +1,31 @@
+MESAİ TAKİP 2026 - Firebase Kullanıcı Girişli Sürüm
+
+Eklenenler:
+- Kullanıcı adı + şifre ile giriş
+- Kayıt ol ekranı
+- Firebase Authentication
+- Firestore bulut mesai kayıtları
+- Admin paneli
+- Toplam kullanıcı sayısı
+- Son giriş yapanlar
+- Kullanıcı engelleme / aktif etme
+- Kullanıcıyı silinmiş olarak işaretleme
+- Admin / Personel yetkisi verme
+
+ADMIN HESABI:
+yildiz.21.98@gmail.com otomatik Admin olarak ayarlandı.
+Admin girişi için giriş/kayıt alanına kullanıcı adı yerine bu mail adresini yazabilirsin.
+
+ÖNEMLİ FIREBASE AYARLARI:
+1) Firebase Console > Authentication > Sign-in method > Email/Password = Enable
+2) Firestore Database oluştur. İlk test için Test Mode seçilebilir.
+3) GitHub Pages domainini Authentication > Settings > Authorized domains kısmına ekle.
+   Örnek: yildiz98.github.io
+
+KULLANICI MANTIĞI:
+Normal kullanıcı huseyin98 yazarsa sistem arkada huseyin98@mesaitakip.app olarak Firebase'e kaydeder.
+Kullanıcı ekranda mail görmez.
+
+GITHUB'A YÜKLEME:
+Zip içindeki dosyaları repoya at. Eski dosyaların üzerine yaz.
+Telefonlarda eski sürüm kalırsa tarayıcı önbelleğini temizle veya uygulamayı ana ekrandan silip tekrar ekle.

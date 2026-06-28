@@ -122,9 +122,13 @@ const HOLIDAYS_BY_YEAR = {
 
 const HOLIDAYS = HOLIDAYS_BY_YEAR[CURRENT_YEAR] || [];
 
-const RECORDS_KEY = `mesai_kayitlari_${CURRENT_YEAR}_sade_aciklamali`;
-const AUTO_BACKUP_KEY = `mesai_yedek_${CURRENT_YEAR}_otomatik`;
-const LAST_GOOD_BACKUP_KEY = `mesai_yedek_${CURRENT_YEAR}_son_saglam`;
+const RECORDS_KEY_BASE = `mesai_kayitlari_${CURRENT_YEAR}_sade_aciklamali`;
+let ACTIVE_USER_ID = null;
+function getRecordsKey(){ return ACTIVE_USER_ID ? `${RECORDS_KEY_BASE}_${ACTIVE_USER_ID}` : RECORDS_KEY_BASE; }
+const AUTO_BACKUP_KEY_BASE = `mesai_yedek_${CURRENT_YEAR}_otomatik`;
+function getAutoBackupKey(){ return ACTIVE_USER_ID ? `${AUTO_BACKUP_KEY_BASE}_${ACTIVE_USER_ID}` : AUTO_BACKUP_KEY_BASE; }
+const LAST_GOOD_BACKUP_KEY_BASE = `mesai_yedek_${CURRENT_YEAR}_son_saglam`;
+function getLastGoodBackupKey(){ return ACTIVE_USER_ID ? `${LAST_GOOD_BACKUP_KEY_BASE}_${ACTIVE_USER_ID}` : LAST_GOOD_BACKUP_KEY_BASE; }
 const LEGACY_KEY_PREFIXES = ["mesai_kayitlari_", "mesai_yedek_"];
 
 function safeJsonParse(value, fallback = null) {
@@ -168,7 +172,7 @@ function makeBackupPayload(reason = "auto", recordsList = []) {
     version: "V10-yedekli",
     reason,
     year: CURRENT_YEAR,
-    recordsKey: RECORDS_KEY,
+    recordsKey: getRecordsKey(),
     createdAt: new Date().toISOString(),
     records: normalizeRecords(recordsList)
   };
@@ -186,13 +190,13 @@ function scanAllLocalBackups() {
 }
 
 function loadInitialRecords() {
-  const current = readRecordsFromValue(localStorage.getItem(RECORDS_KEY));
+  const current = readRecordsFromValue(localStorage.getItem(getRecordsKey()));
   if (current.length) return current;
 
   const candidates = scanAllLocalBackups();
   if (candidates.length) {
-    localStorage.setItem(RECORDS_KEY, JSON.stringify(candidates[0].records));
-    localStorage.setItem(LAST_GOOD_BACKUP_KEY, JSON.stringify({
+    localStorage.setItem(getRecordsKey(), JSON.stringify(candidates[0].records));
+    localStorage.setItem(getLastGoodBackupKey(), JSON.stringify({
       ...makeBackupPayload("otomatik-kurtarma", candidates[0].records),
       recoveredFrom: candidates[0].key
     }));
@@ -207,21 +211,22 @@ let records = loadInitialRecords();
 
 function saveAutoBackup(reason = "save") {
   const payload = makeBackupPayload(reason, records);
-  localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(payload));
-  if (payload.records.length) localStorage.setItem(LAST_GOOD_BACKUP_KEY, JSON.stringify(payload));
+  localStorage.setItem(getAutoBackupKey(), JSON.stringify(payload));
+  if (payload.records.length) localStorage.setItem(getLastGoodBackupKey(), JSON.stringify(payload));
 }
 
 function saveRecords() {
   records = normalizeRecords(records);
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  localStorage.setItem(getRecordsKey(), JSON.stringify(records));
   saveAutoBackup("save");
   updateBackupStatus();
+  if (window.mesaiCloudSave) window.mesaiCloudSave(records);
 }
 
 function updateBackupStatus() {
   const el = document.getElementById("backupStatus");
   if (!el) return;
-  const last = safeJsonParse(localStorage.getItem(LAST_GOOD_BACKUP_KEY), null);
+  const last = safeJsonParse(localStorage.getItem(getLastGoodBackupKey()), null);
   if (last?.createdAt) {
     el.textContent = `Son otomatik yedek: ${new Date(last.createdAt).toLocaleString("tr-TR")} • ${last.records?.length || 0} kayıt`;
   } else {
@@ -810,8 +815,8 @@ function clearAll() {
   const code = prompt("Tüm kayıtları silmek için SİL yaz. Silmeden önce otomatik yerel yedek alındı.");
   if (code !== "SİL" && code !== "SIL") return;
   records = [];
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
-  localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(makeBackupPayload("bos-kayit", records)));
+  localStorage.setItem(getRecordsKey(), JSON.stringify(records));
+  localStorage.setItem(getAutoBackupKey(), JSON.stringify(makeBackupPayload("bos-kayit", records)));
   updateBackupStatus();
   render();
 }
@@ -869,3 +874,185 @@ initNavigation();
 render();
 updateBackupStatus();
 showPage("dashboard");
+
+
+/* ================= FIREBASE KULLANICI GİRİŞ + ADMIN PANEL ================= */
+(function(){
+  const ADMIN_EMAIL = "yildiz.21.98@gmail.com";
+  const APP_DOMAIN = "mesaitakip.app";
+  let auth, db, currentProfile = null, saveTimer = null;
+
+  function byId(id){ return document.getElementById(id); }
+  function cleanUsername(v){ return String(v || "").trim().toLowerCase().replace(/\s+/g, ""); }
+  function usernameToEmail(username){
+    const u = cleanUsername(username);
+    return u.includes("@") ? u : `${u}@${APP_DOMAIN}`;
+  }
+  function showMsg(msg, ok=false){ const el=byId("authMsg"); if(el){ el.textContent=msg; el.style.color=ok?"#86efac":"#fecaca"; } }
+  function setAppVisible(show){
+    document.querySelectorAll("header,.app-shell,footer,.userbar").forEach(el=>{ el.style.display = show ? "" : "none"; });
+    const authEl=byId("authScreen"); if(authEl) authEl.classList.toggle("hidden", show);
+  }
+
+  function injectAuthUI(){
+    const userbar = document.createElement("div");
+    userbar.className = "userbar";
+    userbar.innerHTML = `<span class="user-pill" id="userPill">Kullanıcı</span><button onclick="mesaiLogout()">Çıkış Yap</button>`;
+    document.body.insertBefore(userbar, document.querySelector('.app-shell'));
+
+    const screen=document.createElement("div");
+    screen.id="authScreen"; screen.className="auth-screen";
+    screen.innerHTML = `
+      <div class="auth-card">
+        <img src="polis-logo.png" class="logo" alt="Logo">
+        <h2>MESAİ TAKİP</h2>
+        <p>Kullanıcı adı ve şifre ile güvenli giriş</p>
+        <div class="auth-tabs">
+          <button id="loginTab" onclick="showAuthMode('login')">Giriş Yap</button>
+          <button id="registerTab" class="passive" onclick="showAuthMode('register')">Kayıt Ol</button>
+        </div>
+        <div id="registerFields" class="hidden">
+          <label>Ad Soyad</label><input id="authName" placeholder="Ad Soyad">
+        </div>
+        <label>Kullanıcı Adı</label><input id="authUsername" placeholder="Örn: huseyin98">
+        <label>Şifre</label><input id="authPassword" type="password" placeholder="En az 6 karakter">
+        <button id="authAction" onclick="authAction()">Giriş Yap</button>
+        <button class="link-btn" onclick="resetPasswordInfo()">Şifremi Unuttum</button>
+        <div id="authMsg" class="auth-msg"></div>
+        <p class="small">Not: Normal kullanıcılar mail girmez. Sadece admin hesabı için mail adresi kullanılabilir.</p>
+      </div>`;
+    document.body.appendChild(screen);
+  }
+
+  window.showAuthMode = function(mode){
+    const reg = mode === "register";
+    byId("registerFields")?.classList.toggle("hidden", !reg);
+    byId("loginTab")?.classList.toggle("passive", reg);
+    byId("registerTab")?.classList.toggle("passive", !reg);
+    byId("authAction").textContent = reg ? "Kayıt Ol" : "Giriş Yap";
+    byId("authAction").dataset.mode = mode;
+    showMsg("");
+  };
+
+  window.resetPasswordInfo = async function(){
+    const username = byId("authUsername")?.value;
+    if(!username) return showMsg("Şifre sıfırlamak için kullanıcı adını yaz.");
+    const email = usernameToEmail(username);
+    if(!email.includes("@") || email.endsWith("@"+APP_DOMAIN)) return showMsg("Kullanıcı adı ile şifre sıfırlama için adminden yeni şifre istenmelidir.");
+    try { await auth.sendPasswordResetEmail(email); showMsg("Şifre sıfırlama maili gönderildi.", true); }
+    catch(e){ showMsg("Şifre sıfırlama gönderilemedi: " + e.message); }
+  };
+
+  window.authAction = async function(){
+    const mode = byId("authAction")?.dataset.mode || "login";
+    const username = cleanUsername(byId("authUsername")?.value);
+    const pass = byId("authPassword")?.value || "";
+    const name = (byId("authName")?.value || "").trim();
+    if(!username || pass.length < 6) return showMsg("Kullanıcı adı ve en az 6 karakter şifre gir.");
+    const email = usernameToEmail(username);
+    try{
+      if(mode === "register"){
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        const isAdmin = email.toLowerCase() === ADMIN_EMAIL;
+        await db.collection("users").doc(cred.user.uid).set({
+          uid: cred.user.uid, adSoyad: name || username, kullaniciAdi: username, email,
+          role: isAdmin ? "admin" : "personel", blocked:false, deleted:false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      } else {
+        await auth.signInWithEmailAndPassword(email, pass);
+      }
+    }catch(e){ showMsg(e.message.replace("Firebase:", "")); }
+  };
+
+  window.mesaiLogout = function(){ auth.signOut(); };
+
+  async function loadProfile(user){
+    const ref = db.collection("users").doc(user.uid);
+    const snap = await ref.get();
+    const email = (user.email || "").toLowerCase();
+    if(!snap.exists){
+      await ref.set({uid:user.uid, adSoyad: user.email || "Kullanıcı", kullaniciAdi:(user.email||"").split("@")[0], email:user.email, role: email===ADMIN_EMAIL?"admin":"personel", blocked:false, deleted:false, createdAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    }
+    if(email === ADMIN_EMAIL){ await ref.set({role:"admin", blocked:false, deleted:false, email:user.email}, {merge:true}); }
+    await ref.set({lastLogin: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    const fresh = await ref.get();
+    return fresh.data();
+  }
+
+  async function loadCloudRecords(user){
+    ACTIVE_USER_ID = user.uid;
+    const doc = await db.collection("mesailer").doc(user.uid).collection("years").doc(String(CURRENT_YEAR)).get();
+    const cloudRecords = doc.exists ? normalizeRecords(doc.data().records || []) : [];
+    const localRecords = readRecordsFromValue(localStorage.getItem(getRecordsKey()));
+    records = cloudRecords.length ? cloudRecords : localRecords;
+    localStorage.setItem(getRecordsKey(), JSON.stringify(records));
+    render(); updateBackupStatus();
+    if(!cloudRecords.length && localRecords.length) window.mesaiCloudSave(localRecords);
+  }
+
+  window.mesaiCloudSave = function(list){
+    const user = auth?.currentUser; if(!user) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      db.collection("mesailer").doc(user.uid).collection("years").doc(String(CURRENT_YEAR)).set({
+        records: normalizeRecords(list), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), year: CURRENT_YEAR
+      }, {merge:true}).catch(console.error);
+    }, 500);
+  };
+
+  function ensureAdminPanel(){
+    if(byId("admin-section")) return;
+    const section=document.createElement("section");
+    section.id="admin-section"; section.className="card section-anchor";
+    section.innerHTML = `<h2>Admin Paneli</h2>
+      <div class="dashboard">
+        <div class="dashbox"><small>Toplam Kullanıcı</small><span id="adminTotalUsers">0</span></div>
+        <div class="dashbox"><small>Admin</small><span id="adminTotalAdmins">0</span></div>
+        <div class="dashbox"><small>Personel</small><span id="adminTotalStaff">0</span></div>
+        <div class="dashbox"><small>Engelli</small><span id="adminTotalBlocked">0</span></div>
+      </div>
+      <button onclick="loadAdminUsers()">Kullanıcıları Yenile</button>
+      <div class="wide"><table class="admin-table"><thead><tr><th>Kullanıcı</th><th>Yetki</th><th>Durum</th><th>Son Giriş</th><th>İşlem</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>`;
+    document.querySelector("main")?.appendChild(section);
+    const menu=document.createElement("a"); menu.href="#admin-section"; menu.className="menu-btn"; menu.textContent="👮 Admin Paneli";
+    document.querySelector("aside.sidebar .panel")?.appendChild(menu);
+  }
+
+  window.loadAdminUsers = async function(){
+    if(currentProfile?.role !== "admin") return;
+    const snap = await db.collection("users").orderBy("createdAt", "desc").get();
+    let total=0, admins=0, staff=0, blocked=0;
+    const rows=[];
+    snap.forEach(doc=>{
+      const u=doc.data(); if(u.deleted) return;
+      total++; if(u.role==="admin") admins++; else staff++; if(u.blocked) blocked++;
+      const last = u.lastLogin?.toDate ? u.lastLogin.toDate().toLocaleString("tr-TR") : "-";
+      rows.push(`<tr><td><b>${u.adSoyad||u.kullaniciAdi||"Kullanıcı"}</b><br><span class="small">${u.kullaniciAdi||u.email||""}</span></td><td><select onchange="adminSetRole('${doc.id}',this.value)"><option value="personel" ${u.role!=="admin"?"selected":""}>Personel</option><option value="admin" ${u.role==="admin"?"selected":""}>Admin</option></select></td><td>${u.blocked?'<span class="badge red">Engelli</span>':'<span class="badge green">Aktif</span>'}</td><td>${last}</td><td><button onclick="adminToggleBlock('${doc.id}',${!u.blocked})">${u.blocked?'Aktif Et':'Engelle'}</button><button class="danger" onclick="adminSoftDelete('${doc.id}')">Sil</button></td></tr>`);
+    });
+    byId("adminTotalUsers").textContent=total; byId("adminTotalAdmins").textContent=admins; byId("adminTotalStaff").textContent=staff; byId("adminTotalBlocked").textContent=blocked;
+    byId("adminUsersBody").innerHTML = rows.join("") || `<tr><td colspan="5">Kullanıcı bulunamadı.</td></tr>`;
+  };
+  window.adminSetRole = (uid, role)=> db.collection("users").doc(uid).set({role}, {merge:true}).then(loadAdminUsers);
+  window.adminToggleBlock = (uid, blocked)=> db.collection("users").doc(uid).set({blocked}, {merge:true}).then(loadAdminUsers);
+  window.adminSoftDelete = (uid)=> { if(confirm("Bu kullanıcı silinmiş olarak işaretlensin mi?")) db.collection("users").doc(uid).set({deleted:true, blocked:true}, {merge:true}).then(loadAdminUsers); };
+
+  function start(){
+    injectAuthUI(); setAppVisible(false);
+    if(!window.firebaseConfig || !window.firebase) { showMsg("Firebase ayarı bulunamadı."); return; }
+    firebase.initializeApp(window.firebaseConfig);
+    auth = firebase.auth(); db = firebase.firestore();
+    auth.onAuthStateChanged(async user=>{
+      if(!user){ ACTIVE_USER_ID=null; currentProfile=null; setAppVisible(false); return; }
+      try{
+        currentProfile = await loadProfile(user);
+        if(currentProfile.blocked || currentProfile.deleted){ await auth.signOut(); showMsg("Bu kullanıcı engellenmiş veya silinmiş."); return; }
+        byId("userPill").textContent = `${currentProfile.adSoyad || currentProfile.kullaniciAdi || user.email} • ${currentProfile.role === "admin" ? "Admin" : "Personel"}`;
+        await loadCloudRecords(user);
+        setAppVisible(true);
+        if(currentProfile.role === "admin"){ ensureAdminPanel(); loadAdminUsers(); }
+      }catch(e){ showMsg("Giriş yüklenemedi: " + e.message); }
+    });
+  }
+  start();
+})();
