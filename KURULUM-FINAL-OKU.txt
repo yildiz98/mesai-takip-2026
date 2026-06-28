@@ -1,0 +1,21 @@
+MESAİ TAKİP 2026 - SMARTAPART FIREBASE UYUMLU FINAL
+
+Bu sürüm mevcut SmartApart Firebase projesiyle çalışır.
+
+Giriş:
+Kullanıcı adı: admin
+Şifre: Poh1234
+
+Firebase Authentication tarafında şu kullanıcı olmalı:
+admin@mesaitakip.app
+
+Firestore Rules için:
+firestore.rules dosyasındaki kodu Firebase > Firestore > Rules alanına yapıştırıp Publish / Yayınla yap.
+
+Önemli:
+Bu sürüm mesai verilerini SmartApart verileriyle karıştırmaz.
+Firestore içinde şu doküman isimleriyle saklar:
+smartapart/mesai_user_...
+smartapart/mesai_records_...
+
+Bunun sebebi mevcut SmartApart kurallarına uyumlu çalışmasıdır.

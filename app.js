@@ -825,12 +825,13 @@ function showPage(page = "dashboard") {
     summary: ["summary-section"],
     charts: ["charts-section"],
     history: ["history-section"],
-    settings: ["settings-section"]
+    settings: ["settings-section"],
+    admin: ["admin-section"]
   };
 
   const allSections = [
     "dashboard", "dashboard-recent", "entry-section", "charts-section", "month-summary-section",
-    "records-section", "summary-section", "history-section", "settings-section"
+    "records-section", "summary-section", "history-section", "settings-section", "admin-section"
   ];
 
   allSections.forEach(id => {
@@ -861,7 +862,7 @@ function initNavigation() {
 }
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=21");
+  navigator.serviceWorker.register("sw.js?v=42");
 }
 
 initMonths();
