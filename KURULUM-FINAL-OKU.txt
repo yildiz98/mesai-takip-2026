@@ -4,7 +4,7 @@ Bu sürüm mevcut SmartApart Firebase projesiyle çalışır.
 
 Giriş:
 Kullanıcı adı: admin
-Şifre: Poh1234
+Şifre: Firebase Authentication üzerinden belirlediğin admin şifresi
 
 Firebase Authentication tarafında şu kullanıcı olmalı:
 admin@mesaitakip.app

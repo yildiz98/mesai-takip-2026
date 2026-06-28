@@ -4,7 +4,7 @@ Bu sürüm SmartApart Firebase projesine bağlanır.
 
 1) Firebase Authentication > Users bölümünde şu kullanıcıyı oluştur:
    E-posta: admin@mesaitakip.app
-   Şifre: Poh1234
+   Şifre: Firebase Authentication üzerinden belirlediğin admin şifresi
 
 2) Firestore Rules kısmında şu kurallar yayınlanmış olmalı:
 
@@ -23,7 +23,7 @@ service cloud.firestore {
 
 Giriş:
 Kullanıcı adı: admin
-Şifre: Poh1234
+Şifre: Firebase Authentication üzerinden belirlediğin admin şifresi
 
 Normal kullanıcılar uygulama içinden Kayıt Ol ile hesap oluşturabilir.
 Kullanıcılar e-posta görmez; sistem arkada kullaniciadi@mesaitakip.app formatı kullanır.

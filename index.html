@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Mesai Takip" />
   <link rel="apple-touch-icon" href="polis-logo.png" />
   <title>MESAİ TAKİP</title>
-  <link rel="manifest" href="manifest.json?v=42" />
+  <link rel="manifest" href="manifest.json?v=40" />
   <meta name="theme-color" content="#061326" />
   <style>
     :root{
@@ -732,41 +732,6 @@
       header h1{font-size:18px!important;}
     }
 
-
-    /* Firebase giriş ekranı düzeltmesi */
-    .auth-screen{
-      position:fixed;
-      inset:0;
-      z-index:9999;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      background:radial-gradient(circle at top, rgba(244,176,0,.18), transparent 30%), linear-gradient(135deg,#030b16 0%,#061326 55%,#020712 100%);
-    }
-    .auth-card{
-      width:100%;
-      max-width:390px;
-      padding:22px;
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(15,42,77,.97), rgba(8,27,53,.97));
-      border:1px solid rgba(244,176,0,.45);
-      box-shadow:0 18px 45px rgba(0,0,0,.45);
-      text-align:left;
-    }
-    .auth-card .logo{width:78px;margin:0 auto 10px;display:block;}
-    .auth-card h1{text-align:center;margin:0 0 6px;color:var(--gold-2);font-size:24px;}
-    .auth-note{text-align:center;color:var(--muted);font-size:13px;line-height:1.4;}
-    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
-    .auth-tabs button{margin:0;}
-    .auth-card button.secondary,.auth-tabs button.secondary,.auth-tabs button.ghost{background:#07162c!important;color:var(--gold-2)!important;border:1px solid var(--line)!important;box-shadow:none!important;}
-    .auth-error{display:none;margin-top:12px;padding:11px;border-radius:12px;background:rgba(220,38,38,.14);border:1px solid rgba(220,38,38,.35);color:#fecaca;font-weight:bold;text-align:center;font-size:13px;}
-    body:not(.auth-ok) header,
-    body:not(.auth-ok) .app-shell,
-    body:not(.auth-ok) footer{display:none!important;}
-    body.auth-ok #authScreen{display:none!important;}
-
   </style>
 </head>
 <body>
@@ -786,7 +751,6 @@
       <button id="authSubmit" type="button" onclick="submitAuth()">Giriş Yap</button>
       <button class="secondary" type="button" onclick="resetPasswordByUsername()" style="background:#07162c;color:var(--gold-2);border:1px solid var(--line);box-shadow:none">Şifremi Unuttum</button>
       <div id="authError" class="auth-error"></div>
-      <p class="auth-note" style="margin-top:14px">Admin girişi: <b>admin</b> / <b>Poh1234</b></p>
     </div>
   </div>
 
@@ -992,8 +956,6 @@
         </div>
         <input id="backupFileInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackupFile(this)">
         <p id="backupStatus" class="small" style="margin-top:12px">Yedek durumu kontrol ediliyor...</p>
-        <p id="currentUserInfo" class="small" style="margin-top:12px">👤 Kullanıcı bilgisi bekleniyor...</p>
-        <button class="danger" type="button" onclick="logoutMesai()">Çıkış Yap</button>
         <p class="small"><b>Öneri:</b> Her önemli güncellemeden önce “Yedek Al / İndir” butonuna basıp dosyayı iCloud/Google Drive/PC’ye sakla.</p>
       </section>
     </main>
@@ -1002,7 +964,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=42"></script>
-  <script src="firebase-mesai.js?v=42"></script>
+  <script src="app.js?v=40"></script>
+  <script src="firebase-mesai.js?v=40"></script>
 </body>
 </html>

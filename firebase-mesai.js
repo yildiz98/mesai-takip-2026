@@ -50,16 +50,11 @@ function setAuthMode(mode) {
   authMode = mode;
   clearAuthError();
   const nameWrap = document.getElementById("nameWrap");
-  const loginBtn = document.getElementById("loginTab");
-  const registerBtn = document.getElementById("registerTab");
-  const submitBtn = document.getElementById("authSubmit");
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
   if (nameWrap) nameWrap.style.display = mode === "register" ? "block" : "none";
   if (loginBtn) loginBtn.classList.toggle("ghost", mode !== "login");
   if (registerBtn) registerBtn.classList.toggle("ghost", mode !== "register");
-  if (submitBtn) submitBtn.textContent = mode === "register" ? "Kayıt Ol" : "Giriş Yap";
-}
-function submitAuth() {
-  return loginOrRegister();
 }
 async function loginOrRegister() {
   clearAuthError();
@@ -211,8 +206,6 @@ function initMesaiFirebase() {
       if (!user) {
         firebaseReady = false; cloudUserProfile = null;
         document.body.classList.remove("auth-ok");
-        const panel = document.getElementById("admin-section");
-        if (panel) panel.style.display = "none";
         return;
       }
       cloudUserProfile = await createOrUpdateUserProfile(user, {});
@@ -237,8 +230,6 @@ function initMesaiFirebase() {
       localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
       saveAutoBackup("cloud-login");
       document.body.classList.add("auth-ok");
-      const adminMenu = document.querySelector('.menu-btn[data-page="admin"]');
-      if (adminMenu) adminMenu.style.display = cloudUserProfile.role === "admin" ? "flex" : "none";
       const info = document.getElementById("currentUserInfo");
       if (info) info.innerHTML = `👤 ${getUsername()} <span class="admin-badge">${cloudUserProfile.role}</span> • Bulut aktif`;
       render();
