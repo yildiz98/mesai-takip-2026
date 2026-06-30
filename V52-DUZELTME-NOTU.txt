@@ -1,0 +1,4 @@
+V52 Güncelleme
+- Admin panelinde deleted:true olan kullanıcılar artık listede görünmez.
+- Admin işlem butonları telefonda daha küçük ve simetrik hale getirildi.
+- Cache/script sürümü v52 olarak yenilendi.

@@ -907,6 +907,45 @@
       .auth-update strong{font-size:16px;}
       .auth-credit{font-size:13px;}
     }
+
+    /* V52 Admin panel: silinen kullanıcı gizleme + kompakt işlem butonları */
+    .admin-table th, .admin-table td{ vertical-align:middle; }
+    .admin-table td:last-child{ min-width:126px; }
+    .admin-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+      align-items:center;
+      justify-content:flex-start;
+    }
+    .admin-actions .mini-btn{
+      width:auto!important;
+      min-width:70px!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:6px 8px!important;
+      border-radius:9px!important;
+      font-size:11px!important;
+      line-height:1.1!important;
+      box-shadow:none!important;
+      white-space:nowrap;
+    }
+    .admin-actions .mini-danger{
+      background:linear-gradient(135deg,#dc2626,#991b1b)!important;
+      color:#fff!important;
+    }
+    @media (max-width:620px){
+      .admin-table{ min-width:620px; }
+      .admin-actions{ gap:4px; }
+      .admin-actions .mini-btn{
+        min-width:58px!important;
+        padding:5px 6px!important;
+        border-radius:8px!important;
+        font-size:10px!important;
+      }
+      .admin-table th, .admin-table td{ font-size:10px!important; padding:6px!important; }
+    }
+
   </style>
 </head>
 <body>
@@ -1155,7 +1194,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=51"></script>
-  <script src="firebase-mesai.js?v=51"></script>
+  <script src="app.js?v=52"></script>
+  <script src="firebase-mesai.js?v=52"></script>
 </body>
 </html>

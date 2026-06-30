@@ -244,32 +244,34 @@ async function renderAdminPanel() {
     .where("type", "==", "user")
     .get();
   const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  const usernameCounts = users.reduce((acc, u) => {
+  // Silinen/pasif işaretlenen kullanıcılar admin tablosunda gizlenir.
+  const visibleUsers = users.filter(u => !u.deleted);
+  const usernameCounts = visibleUsers.reduce((acc, u) => {
     const key = normalizeUsername(u.username || (u.email || "").split("@")[0]);
     if (key) acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
-  users.sort((a, b) => {
+  visibleUsers.sort((a, b) => {
     const da = usernameCounts[normalizeUsername(a.username || "")] || 0;
     const db = usernameCounts[normalizeUsername(b.username || "")] || 0;
     if (db !== da) return db - da;
     return String(a.username || "").localeCompare(String(b.username || ""), "tr");
   });
-  const active = users.filter(u => !u.blocked && !u.deleted);
+  const active = visibleUsers.filter(u => !u.blocked);
   const totalEl = document.getElementById("adminTotalUsers");
   const activeEl = document.getElementById("adminActiveUsers");
   const lastEl = document.getElementById("adminLastLogin");
-  if (totalEl) totalEl.textContent = users.length;
+  if (totalEl) totalEl.textContent = visibleUsers.length;
   if (activeEl) activeEl.textContent = active.length;
-  const latest = users.map(u => u.lastLogin?.toDate ? u.lastLogin.toDate() : null).filter(Boolean).sort((a,b)=>b-a)[0];
+  const latest = visibleUsers.map(u => u.lastLogin?.toDate ? u.lastLogin.toDate() : null).filter(Boolean).sort((a,b)=>b-a)[0];
   if (lastEl) lastEl.textContent = latest ? latest.toLocaleDateString("tr-TR") : "-";
   const tbody = document.getElementById("adminUsersTable");
   if (!tbody) return;
-  tbody.innerHTML = users.map(u => {
+  tbody.innerHTML = visibleUsers.map(u => {
     const last = u.lastLogin?.toDate ? u.lastLogin.toDate().toLocaleString("tr-TR") : "-";
     const key = normalizeUsername(u.username || (u.email || "").split("@")[0]);
     const duplicateNote = usernameCounts[key] > 1 ? " / Çift kayıt" : "";
-    const durum = (u.deleted ? "Silinmiş/Pasif" : (u.blocked ? "Engelli" : "Aktif")) + duplicateNote;
+    const durum = (u.blocked ? "Engelli" : "Aktif") + duplicateNote;
     const nextRole = u.role === "admin" ? "personel" : "admin";
     return `<tr><td>${escapeHtml(u.username || "-")}</td><td>${escapeHtml(u.adSoyad || "-")}</td><td>${escapeHtml(u.role || "personel")}</td><td>${durum}</td><td>${last}</td><td><div class="admin-actions"><button class="mini-btn" onclick="adminSetRole('${u.id}','${nextRole}')">${nextRole} yap</button><button class="mini-btn" onclick="adminToggleBlock('${u.id}',${u.blocked ? 'false':'true'})">${u.blocked ? 'Aktif et':'Engelle'}</button><button class="mini-btn mini-danger" onclick="adminSoftDelete('${u.id}')">Sil</button></div></td></tr>`;
   }).join("") || `<tr><td colspan="6">Kullanıcı bulunamadı.</td></tr>`;
