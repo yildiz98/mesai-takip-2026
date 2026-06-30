@@ -873,7 +873,7 @@ function initNavigation() {
 }
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=52");
+  navigator.serviceWorker.register("sw.js?v=53");
 }
 
 initMonths();

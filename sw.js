@@ -1,10 +1,10 @@
-const CACHE_NAME = "mesai-pwa-mobile-v52-admin-compact";
+const CACHE_NAME = "mesai-pwa-mobile-v53-register-info-modal";
 const FILES = [
   "./",
-  "./index.html?v=52",
-  "./app.js?v=52",
-  "./firebase-mesai.js?v=52",
-  "./manifest.json?v=52",
+  "./index.html?v=53",
+  "./app.js?v=53",
+  "./firebase-mesai.js?v=53",
+  "./manifest.json?v=53",
   "./icon.svg",
   "./polis-logo.png"
 ];
@@ -36,7 +36,7 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request).then(cached => cached || caches.match("./index.html?v=52")))
+        .catch(() => caches.match(request).then(cached => cached || caches.match("./index.html?v=53")))
     );
     return;
   }

@@ -1,0 +1,9 @@
+V53 Kayıt Bilgilendirme Modalı
+
+- Giriş ekranındaki Kayıt Ol butonu artık önce kayıt bilgilendirme penceresini açar.
+- Pencerede sağ üstte kapatma (×) butonu eklendi.
+- Kullanıcı adı kuralları, şifre kuralları ve veri güvenliği açıklamaları eklendi.
+- Geçerli ve geçersiz kullanıcı adı örnekleri yeşil/kırmızı kutularla gösterildi.
+- "Okudum, Kayıt Oluştur" butonu ile kayıt formuna geçiş yapılır.
+- Mobil uyumlu tasarım eklendi.
+- Cache sürümü v53 yapıldı.

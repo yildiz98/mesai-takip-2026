@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Mesai Takip" />
   <link rel="apple-touch-icon" href="polis-logo.png" />
   <title>MESAİ TAKİP</title>
-  <link rel="manifest" href="manifest.json?v=43" />
+  <link rel="manifest" href="manifest.json?v=53" />
   <meta name="theme-color" content="#061326" />
   <style>
     :root{
@@ -908,6 +908,188 @@
       .auth-credit{font-size:13px;}
     }
 
+
+
+    /* V53 Kayıt Bilgilendirme Modalı */
+    .register-info-modal{
+      position:fixed;
+      inset:0;
+      z-index:10050;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(1,7,15,.72);
+      backdrop-filter:blur(7px);
+    }
+    .register-info-modal.show{display:flex;}
+    .register-info-box{
+      width:min(960px, 100%);
+      max-height:92vh;
+      overflow:auto;
+      background:linear-gradient(180deg,#f8fbff 0%,#eef7ff 100%);
+      color:#0f172a;
+      border:2px solid #8fc5ff;
+      border-radius:22px;
+      box-shadow:0 28px 90px rgba(0,0,0,.55);
+      padding:24px 28px 22px;
+      position:relative;
+    }
+    .register-info-close{
+      position:absolute;
+      top:16px;
+      right:16px;
+      width:44px!important;
+      height:44px!important;
+      min-height:44px!important;
+      padding:0!important;
+      margin:0!important;
+      border-radius:50%!important;
+      background:#eef6ff!important;
+      border:1px solid #b9d8fb!important;
+      color:#0f172a!important;
+      box-shadow:none!important;
+      font-size:26px!important;
+      line-height:1!important;
+    }
+    .register-info-head{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding-right:48px;
+      border-bottom:1px solid #c8def7;
+      padding-bottom:16px;
+      margin-bottom:16px;
+    }
+    .register-info-icon{
+      width:58px;
+      height:58px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,#2f80ed,#0f57d8);
+      color:#fff;
+      font-size:34px;
+      font-weight:900;
+      flex:0 0 auto;
+      box-shadow:0 8px 18px rgba(15,87,216,.22);
+    }
+    .register-info-head h3{
+      margin:0 0 6px;
+      color:#123f82;
+      font-size:30px;
+      line-height:1.1;
+    }
+    .register-info-head p{margin:0;color:#1f2937;font-size:16px;line-height:1.4;}
+    .info-section{
+      display:grid;
+      grid-template-columns:64px 1fr;
+      gap:14px;
+      padding:14px 0;
+      border-bottom:1px dashed #c5daf2;
+    }
+    .info-section:last-of-type{border-bottom:none;}
+    .info-section .round-icon{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#dcebff;
+      color:#0f57d8;
+      font-size:24px;
+    }
+    .info-section h4{
+      margin:0 0 8px;
+      color:#0f4ead;
+      font-size:20px;
+    }
+    .info-section ul{margin:0;padding-left:20px;line-height:1.65;font-size:15.5px;}
+    .info-section b{color:#0f4ead;}
+    .example-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:16px;
+    }
+    .example-box{
+      border-radius:16px;
+      padding:15px 16px;
+      border:1.5px solid transparent;
+    }
+    .example-box h4{margin:0 0 12px;font-size:17px;display:flex;align-items:center;gap:8px;}
+    .example-box.valid{background:#f0fff2;border-color:#91df9a;color:#126b22;}
+    .example-box.invalid{background:#fff2f2;border-color:#ffaaa9;color:#b91c1c;}
+    .example-pills{display:flex;flex-wrap:wrap;gap:9px;}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 11px;
+      border-radius:10px;
+      font-weight:800;
+      background:#fff;
+      border:1px solid currentColor;
+      font-size:14px;
+    }
+    .info-footer{
+      display:grid;
+      grid-template-columns:56px 1fr;
+      gap:13px;
+      align-items:center;
+      margin-top:18px;
+      padding:14px;
+      border:1px solid #b9d8fb;
+      border-radius:16px;
+      background:#f4f9ff;
+      color:#1f2937;
+    }
+    .info-footer .shield{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:#0f57d8;
+      color:#fff;
+      font-size:24px;
+    }
+    .info-footer strong{display:block;color:#123f82;margin-bottom:3px;font-size:17px;}
+    .info-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+    .info-actions button{
+      width:auto!important;
+      min-width:160px;
+      margin:0!important;
+      border-radius:13px!important;
+      padding:12px 16px!important;
+    }
+    .info-actions .ghost-btn{
+      background:#fff!important;
+      color:#123f82!important;
+      border:1px solid #b9d8fb!important;
+      box-shadow:none!important;
+    }
+    @media (max-width:620px){
+      .register-info-modal{padding:10px;align-items:flex-start;}
+      .register-info-box{max-height:95vh;border-radius:18px;padding:18px 14px 16px;}
+      .register-info-close{top:10px;right:10px;width:38px!important;height:38px!important;min-height:38px!important;font-size:22px!important;}
+      .register-info-head{gap:10px;padding-right:42px;padding-bottom:12px;}
+      .register-info-icon{width:46px;height:46px;font-size:28px;}
+      .register-info-head h3{font-size:23px;}
+      .register-info-head p{font-size:13.5px;}
+      .info-section{grid-template-columns:42px 1fr;gap:9px;padding:12px 0;}
+      .info-section .round-icon{width:38px;height:38px;font-size:18px;}
+      .info-section h4{font-size:17px;}
+      .info-section ul{font-size:13px;line-height:1.55;padding-left:17px;}
+      .example-row{grid-template-columns:1fr;gap:10px;}
+      .example-box{padding:12px;}
+      .pill{font-size:12px;padding:7px 9px;}
+      .info-footer{grid-template-columns:40px 1fr;padding:12px;font-size:13px;}
+      .info-footer .shield{width:36px;height:36px;font-size:20px;border-radius:11px;}
+      .info-actions{flex-direction:column;}
+      .info-actions button{width:100%!important;min-width:0;font-size:14px!important;}
+    }
+
     /* V52 Admin panel: silinen kullanıcı gizleme + kompakt işlem butonları */
     .admin-table th, .admin-table td{ vertical-align:middle; }
     .admin-table td:last-child{ min-width:126px; }
@@ -968,7 +1150,7 @@
       <label>Şifre</label>
       <input id="authPassword" type="password" autocomplete="current-password" placeholder="Şifrenizi girin">
       <button id="authSubmit" type="button" onclick="submitAuth()">Giriş Yap</button>
-      <button id="registerActionBtn" type="button" onclick="setAuthMode('register')">Kayıt Ol</button>
+      <button id="registerActionBtn" type="button" onclick="openRegisterInfo()">Kayıt Ol</button>
 
       <div class="auth-update">
         <strong>📢 Sistem Güncellendi</strong>
@@ -979,6 +1161,86 @@
 
       <div id="authError" class="auth-error"></div>
       <div class="auth-credit">Hazırlayan <b>PM.Hüseyin YILDIZ</b></div>
+    </div>
+
+    <div id="registerInfoModal" class="register-info-modal" aria-hidden="true">
+      <div class="register-info-box" role="dialog" aria-modal="true" aria-labelledby="registerInfoTitle">
+        <button class="register-info-close" type="button" onclick="closeRegisterInfo()" aria-label="Kapat">×</button>
+        <div class="register-info-head">
+          <div class="register-info-icon">i</div>
+          <div>
+            <h3 id="registerInfoTitle">Kayıt Bilgilendirmesi</h3>
+            <p>Lütfen kayıt oluşturmadan önce aşağıdaki kuralları dikkatlice okuyunuz.</p>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="round-icon">👤</div>
+          <div>
+            <h4>Kullanıcı Adı Kuralları</h4>
+            <ul>
+              <li>Kullanıcı adı <b>Türkçe karakter</b> (ç, ğ, ı, İ, ö, ş, ü) içermemelidir.</li>
+              <li>Sadece <b>İngilizce harf (a-z), rakam (0-9), nokta (.)</b> ve <b>alt çizgi (_)</b> kullanabilirsiniz.</li>
+              <li>Boşluk kullanmayınız.</li>
+              <li>Aynı kullanıcı adı yalnızca <b>bir kez</b> kayıt edilebilir.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="round-icon">🔒</div>
+          <div>
+            <h4>Şifre Kuralları</h4>
+            <ul>
+              <li>Şifreniz en az <b>6 karakter</b> olmalıdır.</li>
+              <li>Güvenliğiniz için tahmin edilmesi zor bir şifre seçiniz.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="round-icon">☁️</div>
+          <div>
+            <h4>Veri Güvenliği</h4>
+            <ul>
+              <li>Mesai kayıtlarınız güvenli şekilde <b>Firebase Bulut Sistemi</b> üzerinde saklanır.</li>
+              <li>Telefon değiştirseniz bile <b>aynı kullanıcı adı ve şifreniz</b> ile giriş yapabilirsiniz.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="example-row">
+          <div class="example-box valid">
+            <h4>✅ Geçerli Kullanıcı Adı Örnekleri</h4>
+            <div class="example-pills">
+              <span class="pill">✓ huseyin98</span>
+              <span class="pill">✓ ahmet.yilmaz</span>
+              <span class="pill">✓ polis_34</span>
+            </div>
+          </div>
+          <div class="example-box invalid">
+            <h4>❌ Geçersiz Kullanıcı Adı Örnekleri</h4>
+            <div class="example-pills">
+              <span class="pill">× Hüseyin</span>
+              <span class="pill">× Ahmet Yılmaz</span>
+              <span class="pill">× polis@34</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-footer">
+          <div class="shield">✓</div>
+          <div>
+            <strong>Bilgilendirme</strong>
+            Kayıt oluşturduktan sonra aynı kullanıcı adı ile tekrar kayıt oluşturamazsınız. Böyle bir durumda “Giriş Yap” ekranını kullanarak hesabınıza giriş yapmanız gerekmektedir.
+          </div>
+        </div>
+
+        <div class="info-actions">
+          <button class="ghost-btn" type="button" onclick="closeRegisterInfo()">Kapat</button>
+          <button type="button" onclick="continueToRegister()">Okudum, Kayıt Oluştur</button>
+        </div>
+      </div>
     </div>
   </div>
 

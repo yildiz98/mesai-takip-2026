@@ -75,6 +75,31 @@ function setAuthMode(mode) {
   const regAction = document.getElementById("registerActionBtn");
   if (regAction) regAction.style.display = mode === "register" ? "none" : "block";
 }
+
+function openRegisterInfo() {
+  clearAuthError();
+  const modal = document.getElementById("registerInfoModal");
+  if (modal) {
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+  }
+}
+function closeRegisterInfo() {
+  const modal = document.getElementById("registerInfoModal");
+  if (modal) {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+  }
+}
+function continueToRegister() {
+  closeRegisterInfo();
+  setAuthMode("register");
+  setTimeout(() => document.getElementById("authName")?.focus(), 80);
+}
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeRegisterInfo();
+});
+
 function submitAuth() {
   return loginOrRegister();
 }
@@ -110,6 +135,7 @@ async function loginOrRegister() {
       "auth/wrong-password": "Şifre hatalı.",
       "auth/invalid-credential": "Kullanıcı adı veya şifre hatalı.",
       "auth/email-already-in-use": "Bu kullanıcı adı zaten kayıtlı. Giriş Yap kısmından giriş yapın veya admin eski kaydı pasif yapsın.",
+      "auth/invalid-email": "Kullanıcı adı geçersiz. Türkçe karakter, boşluk veya özel karakter kullanmayın.",
       "auth/network-request-failed": "İnternet bağlantısı yok.",
       "permission-denied": "Firebase yetki izni reddedildi. Rules yayınlanmış olmalı ve işlem giriş yaptıktan sonra yapılmalı."
     };
