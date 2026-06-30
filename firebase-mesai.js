@@ -74,6 +74,14 @@ function setAuthMode(mode) {
   if (submitBtn) submitBtn.textContent = mode === "register" ? "Kayıt Ol" : "Giriş Yap";
   const regAction = document.getElementById("registerActionBtn");
   if (regAction) regAction.style.display = mode === "register" ? "none" : "block";
+  document.body.classList.toggle("register-mode", mode === "register");
+}
+
+function backToLogin() {
+  setAuthMode("login");
+  const nameEl = document.getElementById("authName");
+  if (nameEl) nameEl.value = "";
+  setTimeout(() => document.getElementById("authUsername")?.focus(), 80);
 }
 
 function openRegisterInfo() {

@@ -1,0 +1,6 @@
+V54 Güncelleme Notu
+
+- Kayıt formuna “Giriş Sayfasına Dön” butonu eklendi.
+- Kullanıcı yanlışlıkla kayıt ekranına geçtiğinde sayfa yenilemeden giriş ekranına dönebilir.
+- Buton mobil uyumlu ve mevcut koyu/altın tema ile uyumlu tasarlandı.
+- Cache sürümü v54 olarak yenilendi.

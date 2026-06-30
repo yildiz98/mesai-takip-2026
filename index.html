@@ -835,6 +835,26 @@
       box-shadow:none!important;
     }
     #registerActionBtn::before{content:'👤+ ';}
+    #loginBackBtn{
+      display:none;
+      width:100%;
+      margin:0 0 12px;
+      min-height:48px;
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+      color:#e5e7eb;
+      border:1px solid rgba(244,176,0,.55);
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:none;
+    }
+    #loginBackBtn::before{content:'← ';font-size:18px;}
+    body.register-mode #loginBackBtn{display:block;}
+    body.register-mode .auth-note::after{
+      content:' Kayıt ekranındasınız.';
+      color:var(--gold-2);
+      font-weight:800;
+    }
     .auth-card button.secondary,.auth-tabs button.secondary,.auth-tabs button.ghost{
       background:#07162c!important;
       color:var(--gold-2)!important;
@@ -902,7 +922,7 @@
       .auth-note{font-size:14px;margin-bottom:14px;}
       .auth-card label{font-size:14px;margin-top:12px;}
       .auth-card input{min-height:48px;font-size:14px;border-radius:12px;}
-      #authSubmit,#registerActionBtn{min-height:50px;font-size:16px;border-radius:13px;}
+      #authSubmit,#registerActionBtn,#loginBackBtn{min-height:50px;font-size:16px;border-radius:13px;}
       .auth-update{font-size:13px!important;padding:13px!important;border-radius:14px!important;line-height:1.48!important;}
       .auth-update strong{font-size:16px;}
       .auth-credit{font-size:13px;}
@@ -1141,6 +1161,7 @@
         <button id="loginTab" type="button" onclick="setAuthMode('login')">Giriş Yap</button>
         <button id="registerTab" class="secondary" type="button" onclick="setAuthMode('register')">Kayıt Ol</button>
       </div>
+      <button id="loginBackBtn" type="button" onclick="backToLogin()">Giriş Sayfasına Dön</button>
       <div id="nameWrap" style="display:none">
         <label>Ad Soyad</label>
         <input id="authName" type="text" placeholder="Adınızı ve soyadınızı girin">
