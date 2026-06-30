@@ -95,14 +95,10 @@ async function loginOrRegister() {
   setAuthLoading(true);
   try {
     if (authMode === "register") {
-      const existing = await firebase.firestore()
-        .collection(SMART_COLLECTION)
-        .where("app", "==", APP_TAG)
-        .where("type", "==", "user")
-        .where("username", "==", username)
-        .limit(1)
-        .get();
-      if (!existing.empty) throw { code: "auth/email-already-in-use" };
+      // ÖNEMLİ: Kayıt olmadan önce Firestore sorgusu yapılmaz.
+      // Firestore Rules sadece giriş yapmış kullanıcıya izin verdiği için,
+      // kayıt öncesi kullanıcı adı kontrolü "permission-denied" hatasına sebep oluyordu.
+      // Aynı kullanıcı adı kontrolünü Firebase Authentication e-posta benzersizliği yapar.
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
       await createOrUpdateUserProfile(cred.user, { adSoyad: adSoyad || username, role: "personel" });
     } else {
@@ -115,7 +111,7 @@ async function loginOrRegister() {
       "auth/invalid-credential": "Kullanıcı adı veya şifre hatalı.",
       "auth/email-already-in-use": "Bu kullanıcı adı zaten kayıtlı. Giriş Yap kısmından giriş yapın veya admin eski kaydı pasif yapsın.",
       "auth/network-request-failed": "İnternet bağlantısı yok.",
-      "permission-denied": "Firebase yetki izni reddedildi. Firestore Rules içinde smartapart okuma/yazma izni olmalı."
+      "permission-denied": "Firebase yetki izni reddedildi. Rules yayınlanmış olmalı ve işlem giriş yaptıktan sonra yapılmalı."
     };
     authError(map[e.code] || e.message || "Giriş yapılamadı.");
   } finally {

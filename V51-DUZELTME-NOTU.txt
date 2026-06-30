@@ -1,0 +1,5 @@
+V51 düzeltmesi:
+- Kayıt olmadan önce Firestore üzerinde kullanıcı adı sorgusu kaldırıldı.
+- Sebep: Firestore Rules yalnızca request.auth != null iken izin veriyor. Kayıt ekranında kullanıcı henüz giriş yapmadığı için bu sorgu permission-denied hatasına düşüyordu.
+- Aynı kullanıcı adı kontrolü artık Firebase Authentication'ın email-already-in-use kontrolüne bırakıldı.
+- Cache/service worker sürümü v51 yapıldı.
