@@ -20,6 +20,7 @@ const APP_TAG = "mesaiTakip";
 let authMode = "login";
 let firebaseReady = false;
 let cloudUserProfile = null;
+window.cloudUserProfile = null;
 let isLoadingCloud = false;
 
 function safeDocId(value) {
@@ -202,6 +203,8 @@ async function logoutMesai() {
 }
 
 function initMesaiFirebase() {
+  const adminMenu = document.querySelector('.menu-btn[data-page="admin"]');
+  if (adminMenu) adminMenu.style.display = "none";
   if (!window.firebase) {
     authError("Firebase kütüphanesi yüklenemedi. İnternet bağlantını kontrol et.");
     return;
@@ -211,13 +214,14 @@ function initMesaiFirebase() {
   firebase.auth().onAuthStateChanged(async (user) => {
     try {
       if (!user) {
-        firebaseReady = false; cloudUserProfile = null;
+        firebaseReady = false; cloudUserProfile = null; window.cloudUserProfile = null;
         document.body.classList.remove("auth-ok");
         const panel = document.getElementById("admin-section");
         if (panel) panel.style.display = "none";
         return;
       }
       cloudUserProfile = await createOrUpdateUserProfile(user, {});
+      window.cloudUserProfile = cloudUserProfile;
       if (cloudUserProfile.blocked || cloudUserProfile.deleted) {
         await firebase.auth().signOut();
         authError("Bu kullanıcı admin tarafından engellenmiş/pasif yapılmış.");
@@ -257,7 +261,13 @@ function initMesaiFirebase() {
 const _localSaveRecords = saveRecords;
 saveRecords = function() {
   _localSaveRecords();
-  saveCloudRecords().catch(err => console.warn("Bulut kayıt hatası", err));
+  if (!firebaseReady) return Promise.resolve();
+  return saveCloudRecords().catch(err => {
+    console.warn("Bulut kayıt hatası", err);
+    const el = document.getElementById("currentUserInfo");
+    if (el) el.innerHTML = `⚠️ Bulut kayıt hatası: ${escapeHtml(err.message || err)}`;
+    throw err;
+  });
 };
 
 window.addEventListener("load", initMesaiFirebase);

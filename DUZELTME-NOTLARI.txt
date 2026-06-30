@@ -1,0 +1,15 @@
+Mesai Takip - Hata Ayıklama Notları
+
+Düzeltilenler:
+1) HTML sonunda kalan bozuk '<p class="' satırı temizlendi.
+2) Service Worker eski v30 cache dosyalarını tuttuğu için v43'e yükseltildi.
+3) index.html içindeki app.js ve firebase-mesai.js sürümleri v43 yapıldı; tarayıcı eski kodu açmasın.
+4) Silinen kayıtların buluta kaydedilmeden sayfadan kalkması sorunu azaltıldı. Silme/kayıt/geri yükleme işlemleri artık bulut kaydını bekliyor ve hata olursa uyarı veriyor.
+5) Admin paneli admin olmayan kullanıcıda menüden gizleniyor; doğrudan çağrılırsa dashboard'a yönlendiriliyor.
+6) Yedekten geri yükleme ve tüm kayıtları silme işlemlerinde bulut senkronu bekleniyor.
+
+Önemli not:
+- Firestore rules şu an giriş yapan tüm kullanıcılara smartapart koleksiyonunda okuma/yazma izni veriyor. Bu hızlı kullanım için çalışır ama tam güvenli değildir. Gerçek yayın için admin yetkisi Firebase Custom Claims veya ayrı sunucu/cloud function ile korunmalıdır.
+
+Yükleme önerisi:
+- GitHub'a bu paketi yükledikten sonra telefonda uygulamayı açıp tarayıcı geçmiş/cache temizliği yapın veya sayfayı birkaç kez yenileyin.

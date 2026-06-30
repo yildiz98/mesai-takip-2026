@@ -253,7 +253,7 @@ function importBackupFile(input) {
   const file = input?.files?.[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     const imported = readRecordsFromValue(reader.result);
     if (!imported.length) {
       alert("Bu dosyada geçerli mesai kaydı bulunamadı.");
@@ -265,7 +265,7 @@ function importBackupFile(input) {
       return;
     }
     records = imported;
-    saveRecords();
+    try { await Promise.resolve(saveRecords()); } catch (e) { alert("Yedek cihazda geri yüklendi ancak buluta kaydedilemedi: " + (e.message || e)); }
     input.value = "";
     render();
     alert("Yedek başarıyla geri yüklendi.");
@@ -273,13 +273,13 @@ function importBackupFile(input) {
   reader.readAsText(file);
 }
 
-function restoreLastLocalBackup() {
+async function restoreLastLocalBackup() {
   const candidates = scanAllLocalBackups();
   if (!candidates.length) return alert("Bu cihazda geri yüklenecek yerel yedek bulunamadı.");
   const best = candidates[0];
   if (!confirm(`${best.records.length} kayıt bulundu. Geri yüklensin mi?`)) return;
   records = best.records;
-  saveRecords();
+  try { await Promise.resolve(saveRecords()); } catch (e) { alert("Yerel yedek cihazda geri yüklendi ancak buluta kaydedilemedi: " + (e.message || e)); }
   render();
   alert("Yerel yedek geri yüklendi.");
 }
@@ -365,7 +365,7 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
-function addRecord() {
+async function addRecord() {
   const date = document.getElementById("dateInput").value;
   const hours = parseFloat(document.getElementById("hoursInput").value);
   const description = document.getElementById("descInput").value.trim();
@@ -374,7 +374,7 @@ function addRecord() {
   if (isNaN(hours)) return alert("Mesai değerini sayı olarak gir.");
 
   records.push({ id: Date.now(), date, hours, description });
-  saveRecords();
+  await Promise.resolve(saveRecords());
 
   document.getElementById("dateInput").value = "";
   document.getElementById("hoursInput").value = "";
@@ -383,10 +383,14 @@ function addRecord() {
   render();
 }
 
-function deleteRecord(id) {
+async function deleteRecord(id) {
   if (!confirm("Kaydı silmek istiyor musun?")) return;
   records = records.filter(r => r.id !== id);
-  saveRecords();
+  try {
+    await Promise.resolve(saveRecords());
+  } catch (e) {
+    alert("Kayıt cihazdan silindi ancak buluta kaydedilemedi: " + (e.message || e));
+  }
   render();
 }
 
@@ -804,13 +808,13 @@ function formatDate(dateText) {
   return `${d}.${m}.${y}`;
 }
 
-function clearAll() {
+async function clearAll() {
   if (!records.length) return alert("Silinecek kayıt yok.");
   saveAutoBackup("silmeden-once");
   const code = prompt("Tüm kayıtları silmek için SİL yaz. Silmeden önce otomatik yerel yedek alındı.");
   if (code !== "SİL" && code !== "SIL") return;
   records = [];
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  try { await Promise.resolve(saveRecords()); } catch (e) { alert("Kayıtlar cihazdan silindi ancak buluta kaydedilemedi: " + (e.message || e)); }
   localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(makeBackupPayload("bos-kayit", records)));
   updateBackupStatus();
   render();
@@ -818,6 +822,10 @@ function clearAll() {
 
 
 function showPage(page = "dashboard") {
+  if (page === "admin" && window.cloudUserProfile?.role !== "admin") {
+    alert("Admin paneli sadece admin kullanıcılar içindir.");
+    page = "dashboard";
+  }
   const groups = {
     dashboard: ["dashboard", "dashboard-recent"],
     entry: ["entry-section", "month-summary-section"],
@@ -862,7 +870,7 @@ function initNavigation() {
 }
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=42");
+  navigator.serviceWorker.register("sw.js?v=43");
 }
 
 initMonths();
