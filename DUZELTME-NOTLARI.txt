@@ -13,3 +13,12 @@ Düzeltilenler:
 
 Yükleme önerisi:
 - GitHub'a bu paketi yükledikten sonra telefonda uygulamayı açıp tarayıcı geçmiş/cache temizliği yapın veya sayfayı birkaç kez yenileyin.
+
+
+29.06.2026 EK DÜZELTME:
+- Kullanıcı adı kayıt/girişte otomatik trim + küçük harfe çevrildi.
+- Kayıt butonuna çift basılmasını önlemek için işlem sırasında butonlar pasifleştirildi.
+- Kayıt öncesi Firestore içinde aynı kullanıcı adı var mı kontrolü eklendi.
+- auth/email-already-in-use mesajı netleştirildi.
+- Admin kullanıcı listesinde aynı kullanıcı adına sahip kayıtlar 'Çift kayıt' olarak işaretlenir ve üstte görünür.
+- Service worker cache v44 yapıldı; eski sürümün telefonda/PC'de takılı kalması azaltıldı.

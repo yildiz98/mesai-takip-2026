@@ -22,6 +22,7 @@ let firebaseReady = false;
 let cloudUserProfile = null;
 window.cloudUserProfile = null;
 let isLoadingCloud = false;
+let authInProgress = false;
 
 function safeDocId(value) {
   return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -29,10 +30,21 @@ function safeDocId(value) {
 function userDocId(uid) { return `mesai_user_${safeDocId(uid)}`; }
 function recordDocId(uid, year) { return `mesai_records_${safeDocId(uid)}_${safeDocId(year)}`; }
 
+function normalizeUsername(username) {
+  return String(username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
+}
 function usernameToEmail(username) {
-  const clean = String(username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  const clean = normalizeUsername(username);
   if (!clean) throw new Error("Kullanıcı adı boş olamaz.");
   return `${clean}@mesaitakip.app`;
+}
+function setAuthLoading(loading) {
+  const submitBtn = document.getElementById("authSubmit");
+  const loginBtn = document.getElementById("loginTab");
+  const registerBtn = document.getElementById("registerTab");
+  const actionBtn = document.getElementById("registerActionBtn");
+  [submitBtn, loginBtn, registerBtn, actionBtn].forEach(btn => { if (btn) btn.disabled = loading; });
+  if (submitBtn) submitBtn.textContent = loading ? "Lütfen bekleyin..." : (authMode === "register" ? "Kayıt Ol" : "Giriş Yap");
 }
 function getUsername() {
   try { return (firebase.auth().currentUser?.email || "").split("@")[0]; } catch { return ""; }
@@ -65,15 +77,30 @@ function submitAuth() {
   return loginOrRegister();
 }
 async function loginOrRegister() {
+  if (authInProgress) return;
   clearAuthError();
-  const username = document.getElementById("authUsername").value;
-  const password = document.getElementById("authPassword").value;
+  const usernameEl = document.getElementById("authUsername");
+  const passwordEl = document.getElementById("authPassword");
+  const rawUsername = usernameEl?.value || "";
+  const username = normalizeUsername(rawUsername);
+  const password = passwordEl?.value || "";
   const adSoyad = document.getElementById("authName")?.value || "";
+  if (usernameEl) usernameEl.value = username;
   if (!username || !password) return authError("Kullanıcı adı ve şifre gerekli.");
   if (password.length < 6) return authError("Şifre en az 6 karakter olmalı.");
   const email = usernameToEmail(username);
+  authInProgress = true;
+  setAuthLoading(true);
   try {
     if (authMode === "register") {
+      const existing = await firebase.firestore()
+        .collection(SMART_COLLECTION)
+        .where("app", "==", APP_TAG)
+        .where("type", "==", "user")
+        .where("username", "==", username)
+        .limit(1)
+        .get();
+      if (!existing.empty) throw { code: "auth/email-already-in-use" };
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
       await createOrUpdateUserProfile(cred.user, { adSoyad: adSoyad || username, role: "personel" });
     } else {
@@ -84,11 +111,14 @@ async function loginOrRegister() {
       "auth/user-not-found": "Kullanıcı bulunamadı.",
       "auth/wrong-password": "Şifre hatalı.",
       "auth/invalid-credential": "Kullanıcı adı veya şifre hatalı.",
-      "auth/email-already-in-use": "Bu kullanıcı adı zaten kayıtlı.",
+      "auth/email-already-in-use": "Bu kullanıcı adı zaten kayıtlı. Giriş Yap kısmından giriş yapın veya admin eski kaydı pasif yapsın.",
       "auth/network-request-failed": "İnternet bağlantısı yok.",
       "permission-denied": "Firebase yetki izni reddedildi. Firestore Rules içinde smartapart okuma/yazma izni olmalı."
     };
     authError(map[e.code] || e.message || "Giriş yapılamadı.");
+  } finally {
+    authInProgress = false;
+    setAuthLoading(false);
   }
 }
 
@@ -166,6 +196,17 @@ async function renderAdminPanel() {
     .where("type", "==", "user")
     .get();
   const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const usernameCounts = users.reduce((acc, u) => {
+    const key = normalizeUsername(u.username || (u.email || "").split("@")[0]);
+    if (key) acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  users.sort((a, b) => {
+    const da = usernameCounts[normalizeUsername(a.username || "")] || 0;
+    const db = usernameCounts[normalizeUsername(b.username || "")] || 0;
+    if (db !== da) return db - da;
+    return String(a.username || "").localeCompare(String(b.username || ""), "tr");
+  });
   const active = users.filter(u => !u.blocked && !u.deleted);
   const totalEl = document.getElementById("adminTotalUsers");
   const activeEl = document.getElementById("adminActiveUsers");
@@ -178,7 +219,9 @@ async function renderAdminPanel() {
   if (!tbody) return;
   tbody.innerHTML = users.map(u => {
     const last = u.lastLogin?.toDate ? u.lastLogin.toDate().toLocaleString("tr-TR") : "-";
-    const durum = u.deleted ? "Silinmiş/Pasif" : (u.blocked ? "Engelli" : "Aktif");
+    const key = normalizeUsername(u.username || (u.email || "").split("@")[0]);
+    const duplicateNote = usernameCounts[key] > 1 ? " / Çift kayıt" : "";
+    const durum = (u.deleted ? "Silinmiş/Pasif" : (u.blocked ? "Engelli" : "Aktif")) + duplicateNote;
     const nextRole = u.role === "admin" ? "personel" : "admin";
     return `<tr><td>${escapeHtml(u.username || "-")}</td><td>${escapeHtml(u.adSoyad || "-")}</td><td>${escapeHtml(u.role || "personel")}</td><td>${durum}</td><td>${last}</td><td><div class="admin-actions"><button class="mini-btn" onclick="adminSetRole('${u.id}','${nextRole}')">${nextRole} yap</button><button class="mini-btn" onclick="adminToggleBlock('${u.id}',${u.blocked ? 'false':'true'})">${u.blocked ? 'Aktif et':'Engelle'}</button><button class="mini-btn mini-danger" onclick="adminSoftDelete('${u.id}')">Sil</button></div></td></tr>`;
   }).join("") || `<tr><td colspan="6">Kullanıcı bulunamadı.</td></tr>`;
