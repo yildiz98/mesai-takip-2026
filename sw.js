@@ -2,8 +2,8 @@ const CACHE_NAME = "mesai-pwa-mobile-v10-yedekli-v44";
 const FILES = [
   "./",
   "./index.html?v=44",
-  "./app.js?v=44",
-  "./firebase-mesai.js?v=44",
+  "./app.js?v=50",
+  "./firebase-mesai.js?v=50",
   "./manifest.json?v=44",
   "./icon.svg",
   "./polis-logo.png"

@@ -23,6 +23,8 @@ let cloudUserProfile = null;
 window.cloudUserProfile = null;
 let isLoadingCloud = false;
 let authInProgress = false;
+let unsubscribeRecordsSnapshot = null;
+let firstSnapshotHandled = false;
 
 function safeDocId(value) {
   return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -157,28 +159,78 @@ async function createOrUpdateUserProfile(user, extra = {}) {
   return fresh.data();
 }
 
-async function loadCloudRecords(uid) {
+async function loadCloudRecordsState(uid) {
   const ref = firebase.firestore().collection(SMART_COLLECTION).doc(recordDocId(uid, CURRENT_YEAR));
   const snap = await ref.get();
-  if (!snap.exists) return [];
-  return normalizeRecords(snap.data().records || []);
+  if (!snap.exists) return { exists: false, records: [], data: null };
+  const data = snap.data() || {};
+  return { exists: true, records: normalizeRecords(data.records || []), data };
 }
+
 async function saveCloudRecords() {
   if (!firebaseReady || isLoadingCloud) return;
   const user = firebase.auth().currentUser;
   if (!user || cloudUserProfile?.blocked || cloudUserProfile?.deleted) return;
   records = normalizeRecords(records);
-  await firebase.firestore().collection(SMART_COLLECTION).doc(recordDocId(user.uid, CURRENT_YEAR)).set({
+  const ref = firebase.firestore().collection(SMART_COLLECTION).doc(recordDocId(user.uid, CURRENT_YEAR));
+  await ref.set({
     type: "records",
     app: APP_TAG,
     uid: user.uid,
     username: getUsername(),
     year: CURRENT_YEAR,
     records,
+    recordCount: records.length,
+    emptyState: records.length === 0,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   }, { merge: true });
+  // Yazma sonrası kısa doğrulama: Firestore hala eski listeyi tutuyorsa kullanıcıya net hata ver.
+  const verify = await ref.get();
+  const verifiedRecords = normalizeRecords((verify.data() || {}).records || []);
+  if (JSON.stringify(verifiedRecords) !== JSON.stringify(records)) {
+    throw new Error("Bulut doğrulaması başarısız. Kayıt Firebase üzerinde güncellenmedi.");
+  }
+  localStorage.setItem("mesai_cloud_managed", "1");
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
   const el = document.getElementById("currentUserInfo");
   if (el) el.innerHTML = `👤 ${getUsername()} <span class="admin-badge">${cloudUserProfile?.role || "personel"}</span> • Buluta kaydedildi`;
+}
+
+function subscribeCloudRecords(uid) {
+  if (unsubscribeRecordsSnapshot) unsubscribeRecordsSnapshot();
+  firstSnapshotHandled = false;
+  const ref = firebase.firestore().collection(SMART_COLLECTION).doc(recordDocId(uid, CURRENT_YEAR));
+  unsubscribeRecordsSnapshot = ref.onSnapshot(async (snap) => {
+    try {
+      localStorage.setItem("mesai_cloud_managed", "1");
+      if (!snap.exists) {
+        // İlk kurulumda bulutta doküman yoksa mevcut yerel kayıtları bir defaya mahsus buluta taşı.
+        if (!firstSnapshotHandled && normalizeRecords(records).length) {
+          firstSnapshotHandled = true;
+          await saveCloudRecords();
+          return;
+        }
+        records = [];
+      } else {
+        records = normalizeRecords((snap.data() || {}).records || []);
+      }
+      firstSnapshotHandled = true;
+      isLoadingCloud = true;
+      localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+      saveAutoBackup("cloud-snapshot");
+      isLoadingCloud = false;
+      render();
+      const el = document.getElementById("currentUserInfo");
+      if (el) el.innerHTML = `👤 ${getUsername()} <span class="admin-badge">${cloudUserProfile?.role || "personel"}</span> • Bulut senkron`;
+    } catch (e) {
+      isLoadingCloud = false;
+      console.error(e);
+      authError("Bulut kayıt okuma hatası: " + (e.message || e.code || e));
+    }
+  }, (err) => {
+    console.error(err);
+    authError("Firebase canlı senkron hatası: " + (err.message || err.code || err));
+  });
 }
 async function cloudSaveNow() {
   try { await saveCloudRecords(); alert("Buluta kaydedildi."); } catch (e) { alert("Buluta kaydetme hatası: " + e.message); }
@@ -257,6 +309,7 @@ function initMesaiFirebase() {
   firebase.auth().onAuthStateChanged(async (user) => {
     try {
       if (!user) {
+        if (unsubscribeRecordsSnapshot) { unsubscribeRecordsSnapshot(); unsubscribeRecordsSnapshot = null; }
         firebaseReady = false; cloudUserProfile = null; window.cloudUserProfile = null;
         document.body.classList.remove("auth-ok");
         const panel = document.getElementById("admin-section");
@@ -271,20 +324,21 @@ function initMesaiFirebase() {
         return;
       }
       firebaseReady = true;
-      isLoadingCloud = true;
-      const cloud = await loadCloudRecords(user.uid);
+      localStorage.setItem("mesai_cloud_managed", "1");
+      // Firestore artık tek ana kaynaktır. Doküman varsa boş dizi bile gerçek durum kabul edilir.
+      const cloudState = await loadCloudRecordsState(user.uid);
       const local = normalizeRecords(records);
-      if (cloud.length) {
-        records = cloud;
+      if (cloudState.exists) {
+        records = cloudState.records;
       } else if (local.length) {
-        records = local;
-        isLoadingCloud = false;
         await saveCloudRecords();
-        isLoadingCloud = true;
+      } else {
+        records = [];
+        await saveCloudRecords();
       }
-      isLoadingCloud = false;
       localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
       saveAutoBackup("cloud-login");
+      subscribeCloudRecords(user.uid);
       document.body.classList.add("auth-ok");
       const adminMenu = document.querySelector('.menu-btn[data-page="admin"]');
       if (adminMenu) adminMenu.style.display = cloudUserProfile.role === "admin" ? "flex" : "none";

@@ -22,3 +22,12 @@ Yükleme önerisi:
 - auth/email-already-in-use mesajı netleştirildi.
 - Admin kullanıcı listesinde aynı kullanıcı adına sahip kayıtlar 'Çift kayıt' olarak işaretlenir ve üstte görünür.
 - Service worker cache v44 yapıldı; eski sürümün telefonda/PC'de takılı kalması azaltıldı.
+
+
+V50 - Firebase tek kaynak ve silme düzeltmesi
+- Firestore mesai dokümanı artık tek ana veri kaynağıdır.
+- LocalStorage sadece cache/yedek olarak kullanılır; bulutta silinen kayıt eski yerel yedekten geri yüklenmez.
+- Firestore dokümanı varsa records boş olsa bile gerçek durum kabul edilir.
+- Canlı senkronizasyon eklendi: aynı kullanıcı başka cihazda/sekmede silerse ekrandan düşer.
+- Buluta yazma sonrası doğrulama eklendi; kaydedilemezse kullanıcıya hata gösterilir.
+- Cache/service worker sürümü v50 yapıldı.

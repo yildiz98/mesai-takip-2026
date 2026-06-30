@@ -187,6 +187,9 @@ function scanAllLocalBackups() {
 
 function loadInitialRecords() {
   const current = readRecordsFromValue(localStorage.getItem(RECORDS_KEY));
+  // Firebase aktif kullanılmışsa yerel yedekler ana kaynak değildir.
+  // Bu kontrol, bulutta silinmiş kayıtların eski localStorage yedeğinden tekrar geri gelmesini engeller.
+  if (localStorage.getItem("mesai_cloud_managed") === "1") return current;
   if (current.length) return current;
 
   const candidates = scanAllLocalBackups();
@@ -870,7 +873,7 @@ function initNavigation() {
 }
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js?v=44");
+  navigator.serviceWorker.register("sw.js?v=50");
 }
 
 initMonths();
