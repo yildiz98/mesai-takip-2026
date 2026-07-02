@@ -121,14 +121,24 @@ const HOLIDAYS_BY_YEAR = {
 };
 
 // Türkiye + KKTC resmi tatilleri birlikte kullanılır.
-// Ancak kullanıcı talebine göre 15 Temmuz sisteme tatil olarak dahil edilmez.
-// Bu filtre ileriki yıllarda yanlışlıkla 15 Temmuz eklenirse de mesai hesabını bozmaz.
+// Kullanıcı talebine göre hesaplamaya dahil edilmeyecek tatiller:
+// - 15 Temmuz Demokrasi ve Millî Birlik Günü
+// - Mevlid Kandili / 2026 için 25 Ağustos Mevlid Kandili
+// Bu koruma ileriki yıllarda listeye tekrar eklense bile hedef mesai hesabını bozmaz.
 const EXCLUDED_HOLIDAY_DATES = new Set([
-  `${CURRENT_YEAR}-07-15`
+  `${CURRENT_YEAR}-07-15`,
+  `${CURRENT_YEAR}-08-25`
 ]);
 
+const EXCLUDED_HOLIDAY_NAMES = [
+  "mevlid kandili"
+];
+
 const HOLIDAYS = (HOLIDAYS_BY_YEAR[CURRENT_YEAR] || [])
-  .filter(holiday => !EXCLUDED_HOLIDAY_DATES.has(holiday.date));
+  .filter(holiday => !EXCLUDED_HOLIDAY_DATES.has(holiday.date))
+  .filter(holiday => !EXCLUDED_HOLIDAY_NAMES.some(name =>
+    String(holiday.name || "").toLocaleLowerCase("tr-TR").includes(name)
+  ));
 
 const RECORDS_KEY = `mesai_kayitlari_${CURRENT_YEAR}_sade_aciklamali`;
 const AUTO_BACKUP_KEY = `mesai_yedek_${CURRENT_YEAR}_otomatik`;

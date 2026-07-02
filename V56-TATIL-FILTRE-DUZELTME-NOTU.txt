@@ -1,0 +1,9 @@
+V56 Tatil Filtre Düzeltmesi
+
+Kural güncellendi:
+- KKTC resmi tatilleri hesaplamaya dahildir.
+- Türkiye resmi tatilleri hesaplamaya dahildir.
+- 15 Temmuz Demokrasi ve Millî Birlik Günü hesaplamaya dahil edilmez.
+- Mevlid Kandili hesaplamaya dahil edilmez. 2026 için 25 Ağustos Mevlid Kandili tatil sayılmaz.
+
+Bu işlem sadece mevcut yıllar için değil, ileride listeye yanlışlıkla Mevlid Kandili veya 15 Temmuz eklenirse de hedef mesai hesabının bozulmaması için filtre olarak uygulanmıştır.
