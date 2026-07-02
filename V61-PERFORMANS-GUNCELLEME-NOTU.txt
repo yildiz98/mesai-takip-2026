@@ -1,0 +1,11 @@
+V61 Performans Güncellemesi
+
+Yapılanlar:
+- Service Worker cache sürümü v61 olarak güncellendi.
+- app.js ve firebase-mesai.js dosyaları index.html içinde v61 parametresiyle çağrılıyor.
+- Firebase/Auth/Firestore ve POST istekleri cache dışına alındı.
+- Giriş sonrası kullanıcı doğrulanınca ana ekran daha hızlı açılacak şekilde düzenlendi.
+- Mesai kayıtları buluttan arka planda senkronize edilir.
+- Admin paneli sadece admin kullanıcıda arka planda yüklenir.
+
+GitHub'a yükledikten sonra Ctrl+F5 yapın. Mobilde eski cache kalırsa tarayıcı/site verilerini temizleyin.

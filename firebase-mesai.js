@@ -442,6 +442,16 @@ function initMesaiFirebase() {
         return;
       }
       firebaseReady = true;
+
+      // V61 Performans: Kullanıcı doğrulandıktan sonra ekranı hemen aç.
+      // Bulut kayıtları ve admin tablosu arka planda yüklenir.
+      document.body.classList.add("auth-ok");
+      const adminMenu = document.querySelector('.menu-btn[data-page="admin"]');
+      if (adminMenu) adminMenu.style.display = cloudUserProfile.role === "admin" ? "flex" : "none";
+      const info = document.getElementById("currentUserInfo");
+      if (info) info.innerHTML = `👤 ${getUsername()} <span class="admin-badge">${cloudUserProfile.role}</span> • Bulut yükleniyor...`;
+      try { render(); } catch (renderErr) { console.warn("İlk hızlı render atlandı", renderErr); }
+
       localStorage.setItem("mesai_cloud_managed", "1");
       // Firestore artık tek ana kaynaktır. Doküman varsa boş dizi bile gerçek durum kabul edilir.
       const cloudState = await loadCloudRecordsState(user.uid);
@@ -457,13 +467,11 @@ function initMesaiFirebase() {
       localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
       saveAutoBackup("cloud-login");
       subscribeCloudRecords(user.uid);
-      document.body.classList.add("auth-ok");
-      const adminMenu = document.querySelector('.menu-btn[data-page="admin"]');
-      if (adminMenu) adminMenu.style.display = cloudUserProfile.role === "admin" ? "flex" : "none";
-      const info = document.getElementById("currentUserInfo");
       if (info) info.innerHTML = `👤 ${getUsername()} <span class="admin-badge">${cloudUserProfile.role}</span> • Bulut aktif`;
       render();
-      await renderAdminPanel();
+      if (cloudUserProfile.role === "admin") {
+        renderAdminPanel().catch(err => console.warn("Admin paneli arka planda yüklenemedi", err));
+      }
     } catch (e) {
       isLoadingCloud = false;
       console.error(e);
