@@ -352,6 +352,35 @@ async function cloudSaveNow() {
   try { await saveCloudRecords(); alert("Buluta kaydedildi."); } catch (e) { alert("Buluta kaydetme hatası: " + e.message); }
 }
 
+
+function formatProfileDate(value) {
+  try {
+    const d = value?.toDate ? value.toDate() : (value ? new Date(value) : null);
+    if (!d || Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleString("tr-TR", { day:"2-digit", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  } catch { return "-"; }
+}
+function setProfileText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value || "-";
+}
+function renderProfilePanel() {
+  const profile = window.cloudUserProfile || cloudUserProfile;
+  if (!profile) return;
+  const displayName = profile.adSoyad || profile.username || "Kullanıcı";
+  const role = profile.role === "admin" ? "Admin" : "Personel";
+  setProfileText("profileDisplayName", displayName);
+  setProfileText("profileName", profile.adSoyad || displayName);
+  setProfileText("profileUsername", profile.username || getUsername());
+  setProfileText("profileEmail", profile.email || profile.authEmail || firebase.auth().currentUser?.email || "-");
+  setProfileText("profileCreatedAt", formatProfileDate(profile.createdAt));
+  setProfileText("profileLastLogin", formatProfileDate(profile.lastLogin));
+  const rolePill = document.getElementById("profileRolePill");
+  if (rolePill) rolePill.textContent = (profile.role === "admin" ? "👮 " : "🛡️ ") + role;
+  const roleBox = document.getElementById("profileRole");
+  if (roleBox) roleBox.innerHTML = `<span class="profile-badge">${profile.role === "admin" ? "👮" : "⭐"} ${role}</span>`;
+}
+
 async function renderAdminPanel() {
   const panel = document.getElementById("admin-section");
   if (!panel) return;
@@ -436,6 +465,7 @@ function initMesaiFirebase() {
       }
       cloudUserProfile = await createOrUpdateUserProfile(user, {});
       window.cloudUserProfile = cloudUserProfile;
+      renderProfilePanel();
       if (cloudUserProfile.blocked || cloudUserProfile.deleted) {
         await firebase.auth().signOut();
         authError("Bu kullanıcı admin tarafından engellenmiş/pasif yapılmış.");
@@ -468,6 +498,7 @@ function initMesaiFirebase() {
       saveAutoBackup("cloud-login");
       subscribeCloudRecords(user.uid);
       if (info) info.innerHTML = `👤 ${getUsername()} <span class="admin-badge">${cloudUserProfile.role}</span> • Bulut aktif`;
+      renderProfilePanel();
       render();
       if (cloudUserProfile.role === "admin") {
         renderAdminPanel().catch(err => console.warn("Admin paneli arka planda yüklenemedi", err));

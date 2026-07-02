@@ -1,0 +1,5 @@
+V62 Profilim Güncellemesi
+- Menüye Profilim sayfası eklendi.
+- Kullanıcı adı, ad soyad, e-posta, rol, kayıt tarihi ve son giriş bilgisi gösterilir.
+- Sistem renklerine uygun koyu lacivert/altın tasarım uygulandı.
+- Service Worker ve dosya sürümleri v62 olarak güncellendi.

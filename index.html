@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Mesai Takip" />
   <link rel="apple-touch-icon" href="polis-logo.png" />
   <title>MESAİ TAKİP</title>
-  <link rel="manifest" href="manifest.json?v=53" />
+  <link rel="manifest" href="manifest.json?v=62" />
   <meta name="theme-color" content="#061326" />
   <style>
     :root{
@@ -1292,6 +1292,45 @@
       .admin-table th, .admin-table td{ font-size:10px!important; padding:6px!important; }
     }
 
+
+    /* V62 Profilim ekranı */
+    .profile-page{background:linear-gradient(145deg, rgba(3,12,24,.96), rgba(8,27,53,.92)); border:1px solid rgba(244,176,0,.28); box-shadow:0 18px 45px rgba(0,0,0,.25);}
+    .profile-title{display:flex; align-items:center; gap:14px; margin-bottom:18px;}
+    .profile-title .profile-title-icon{width:54px; height:54px; border-radius:18px; display:grid; place-items:center; background:rgba(244,176,0,.13); border:1px solid rgba(244,176,0,.32); color:var(--gold); font-size:27px;}
+    .profile-title h2{margin:0; color:var(--gold-2); font-size:34px;}
+    .profile-title p{margin:4px 0 0; color:var(--muted);}
+    .profile-hero{position:relative; overflow:hidden; display:grid; grid-template-columns:150px 1fr auto; gap:22px; align-items:center; padding:25px; border-radius:22px; background:radial-gradient(circle at 80% 30%, rgba(244,176,0,.18), transparent 32%), linear-gradient(135deg, rgba(8,27,53,.98), rgba(2,10,22,.98)); border:1px solid rgba(244,176,0,.25); margin-bottom:18px;}
+    .profile-hero::after{content:""; position:absolute; right:28px; bottom:-32px; width:210px; height:210px; background:url('polis-logo.png') center/contain no-repeat; opacity:.07; pointer-events:none;}
+    .profile-avatar{width:130px; height:130px; border-radius:50%; display:grid; place-items:center; border:2px solid rgba(244,176,0,.35); background:rgba(244,176,0,.08); box-shadow:0 0 0 12px rgba(255,255,255,.03); overflow:hidden;}
+    .profile-avatar img{width:74%; height:74%; object-fit:contain; filter:drop-shadow(0 8px 20px rgba(0,0,0,.35));}
+    .profile-hero h3{font-size:33px; margin:0 0 10px; color:#fff;}
+    .profile-pill{display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:13px; background:rgba(244,176,0,.14); color:var(--gold-2); border:1px solid rgba(244,176,0,.25); font-weight:900;}
+    .profile-date{margin-top:18px; color:var(--muted); font-size:14px;}
+    .profile-date strong{display:block; color:#fff; font-size:18px; margin-top:4px;}
+    .profile-status{position:relative; z-index:1; align-self:start; display:inline-flex; align-items:center; gap:9px; padding:11px 15px; border-radius:14px; background:rgba(34,197,94,.18); color:#4ade80; font-weight:900; border:1px solid rgba(34,197,94,.2);}
+    .profile-status i{width:13px; height:13px; background:#22c55e; border-radius:50%; display:block; box-shadow:0 0 18px rgba(34,197,94,.75);}
+    .profile-list{border:1px solid rgba(255,255,255,.10); border-radius:22px; overflow:hidden; background:rgba(3,12,24,.46); margin-bottom:18px;}
+    .profile-row{display:grid; grid-template-columns:68px 1fr auto; align-items:center; gap:18px; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.08);}
+    .profile-row:last-child{border-bottom:0;}
+    .profile-row .picon{width:48px; height:48px; border-radius:50%; display:grid; place-items:center; background:rgba(244,176,0,.14); color:var(--gold); font-size:23px;}
+    .profile-row strong{font-size:20px; color:#fff; display:block; margin-bottom:4px;}
+    .profile-row small{color:var(--muted);}
+    .profile-value{font-size:19px; color:#fff; font-weight:900; text-align:right; word-break:break-word;}
+    .profile-badge{display:inline-flex; align-items:center; gap:7px; padding:9px 13px; border-radius:12px; font-weight:900; color:var(--gold-2); background:rgba(244,176,0,.14); border:1px solid rgba(244,176,0,.24);}
+    .profile-badge.green{color:#4ade80; background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.22);}
+    .profile-info{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 22px; border-radius:20px; border:1px solid rgba(244,176,0,.32); background:linear-gradient(135deg, rgba(244,176,0,.10), rgba(8,27,53,.6));}
+    .profile-info b{display:block; color:var(--gold-2); font-size:20px; margin-bottom:6px;}
+    .profile-info span{color:#e5e7eb;}
+    .profile-info .shield{font-size:54px; color:var(--gold); opacity:.9;}
+    @media(max-width:820px){
+      .profile-hero{grid-template-columns:1fr; text-align:center; justify-items:center; padding:20px;}
+      .profile-status{align-self:center;}
+      .profile-row{grid-template-columns:50px 1fr; gap:12px; padding:15px;}
+      .profile-value{grid-column:2; text-align:left; font-size:16px;}
+      .profile-title h2{font-size:28px;}
+      .profile-info{align-items:flex-start;}
+    }
+
   </style>
 </head>
 <body>
@@ -1487,6 +1526,7 @@
         <a class="menu-btn primary-action" href="#entry-section" data-page="entry"><span class="nav-icon">➕</span><span>Yeni Mesai</span></a>
         <a class="menu-btn" href="#records-section" data-page="records"><span class="nav-icon">📅</span><span>Bu Ay</span></a>
         <a class="menu-btn" href="#charts-section" data-page="charts"><span class="nav-icon">📊</span><span>Grafikler</span></a>
+        <a class="menu-btn" href="#profile-section" data-page="profile"><span class="nav-icon">👤</span><span>Profilim</span></a>
         <a class="menu-btn" href="#settings-section" data-page="settings"><span class="nav-icon">⚙️</span><span>Ayarlar</span></a>
         <a class="menu-btn" href="#admin-section" data-page="admin"><span class="nav-icon">👮</span><span>Admin Paneli</span></a>
       </div>
@@ -1651,6 +1691,41 @@
 
 
 
+      <section id="profile-section" class="card section-anchor profile-page page-hidden">
+        <div class="profile-title">
+          <div class="profile-title-icon">👤</div>
+          <div>
+            <h2>Profilim</h2>
+            <p>Hesap bilgilerinizi görüntüleyebilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="profile-hero">
+          <div class="profile-avatar"><img src="polis-logo.png" alt="Profil"></div>
+          <div>
+            <h3 id="profileDisplayName">-</h3>
+            <span id="profileRolePill" class="profile-pill">🛡️ Personel</span>
+            <div class="profile-date">Sisteme kayıt tarihi <strong id="profileCreatedAt">-</strong></div>
+          </div>
+          <div class="profile-status"><i></i><span>Aktif</span></div>
+        </div>
+
+        <div class="profile-list">
+          <div class="profile-row"><div class="picon">👤</div><div><strong>Ad Soyad</strong><small>Sistemde kayıtlı adınız</small></div><div id="profileName" class="profile-value">-</div></div>
+          <div class="profile-row"><div class="picon">🔐</div><div><strong>Kullanıcı Adı</strong><small>Sistemdeki kullanıcı adınız</small></div><div id="profileUsername" class="profile-value">-</div></div>
+          <div class="profile-row"><div class="picon">✉️</div><div><strong>E-posta</strong><small>Kayıtlı e-posta adresiniz</small></div><div id="profileEmail" class="profile-value">-</div></div>
+          <div class="profile-row"><div class="picon">🛡️</div><div><strong>Yetki</strong><small>Sistemdeki rolünüz</small></div><div id="profileRole" class="profile-value"><span class="profile-badge">Personel</span></div></div>
+          <div class="profile-row"><div class="picon">☁️</div><div><strong>Hesap Durumu</strong><small>Bulut senkron durumu</small></div><div class="profile-value"><span class="profile-badge green">✅ Senkron Aktif</span></div></div>
+          <div class="profile-row"><div class="picon">🕘</div><div><strong>Son Giriş</strong><small>Sisteme son giriş tarihiniz</small></div><div id="profileLastLogin" class="profile-value">-</div></div>
+        </div>
+
+        <div class="profile-info">
+          <div><b>Bilgilendirme</b><span>Hesap bilgileriniz sadece görüntüleme amaçlıdır. Değişiklik yapmak için sistem yöneticinizle iletişime geçiniz.</span></div>
+          <div class="shield">🔒</div>
+        </div>
+      </section>
+
+
       <section id="admin-section" class="card section-anchor" style="display:none">
         <h2>Admin Paneli</h2>
         <div class="dashboard" style="grid-template-columns:repeat(3,1fr)">
@@ -1683,7 +1758,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=61"></script>
-  <script src="firebase-mesai.js?v=61"></script>
+  <script src="app.js?v=62"></script>
+  <script src="firebase-mesai.js?v=62"></script>
 </body>
 </html>
