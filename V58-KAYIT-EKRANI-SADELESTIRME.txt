@@ -1,0 +1,3 @@
+Kayıt ol ekranında e-posta alanındaki şifre sıfırlama açıklaması kaldırıldı.
+Kayıt bilgilendirme penceresindeki şifre sıfırlama cümlesi sadeleştirildi.
+Şifremi Unuttum özelliği giriş ekranında çalışmaya devam eder.
