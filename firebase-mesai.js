@@ -191,69 +191,31 @@ async function loginOrRegister() {
   }
 }
 
-function openForgotPasswordModal() {
-  clearAuthError();
-  const modal = document.getElementById("forgotPasswordModal");
-  const emailInput = document.getElementById("forgotEmailInput");
-  const currentEmail = document.getElementById("authEmail");
-  const status = document.getElementById("forgotStatus");
-  if (status) { status.className = "forgot-status"; status.textContent = ""; }
-  if (emailInput && currentEmail && currentEmail.value) emailInput.value = currentEmail.value;
-  if (modal) {
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-    setTimeout(() => emailInput && emailInput.focus(), 80);
-  }
-}
-
-function closeForgotPasswordModal() {
-  const modal = document.getElementById("forgotPasswordModal");
-  if (modal) {
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
-  }
-}
-
-function setForgotStatus(message, type) {
-  const status = document.getElementById("forgotStatus");
-  if (!status) return authError(message);
-  status.textContent = message;
-  status.className = "forgot-status " + (type === "ok" ? "ok" : "warn");
-}
-
-async function sendForgotPasswordEmail() {
-  const btn = document.getElementById("sendResetBtn");
+async function resetPasswordByEmail() {
   try {
     clearAuthError();
-    const input = document.getElementById("forgotEmailInput");
-    const email = normalizeEmail(input ? input.value : "");
-    if (!email) return setForgotStatus("Şifre sıfırlama için kayıtlı e-posta adresinizi yazınız.", "warn");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setForgotStatus("Geçerli bir e-posta adresi yazınız.", "warn");
-    if (btn) { btn.disabled = true; btn.textContent = "Gönderiliyor..."; }
+    const email = normalizeEmail(prompt("Şifre sıfırlama bağlantısı için kayıtlı e-posta adresinizi yazınız:"));
+    if (!email) return authError("Şifre sıfırlama için e-posta adresi gerekli.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return authError("Geçerli bir e-posta adresi yazınız.");
     await firebase.auth().sendPasswordResetEmail(email);
-    setForgotStatus("Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Gelen kutusu ve Spam / Gereksiz klasörünü kontrol edin.", "ok");
+    authError("Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Gelen kutusu ve spam klasörünü kontrol edin.");
   } catch (e) {
     const map = {
       "auth/user-not-found": "Bu e-posta adresiyle kayıtlı hesap bulunamadı.",
       "auth/invalid-email": "E-posta adresi geçersiz.",
-      "auth/too-many-requests": "Çok fazla deneme yapıldı. Lütfen bir süre sonra tekrar deneyin.",
-      "auth/network-request-failed": "İnternet bağlantısı yok. Bağlantınızı kontrol edip tekrar deneyin."
+      "auth/too-many-requests": "Çok fazla deneme yapıldı. Lütfen bir süre sonra tekrar deneyin."
     };
-    setForgotStatus(map[e.code] || "Şifre sıfırlama bağlantısı gönderilemedi.", "warn");
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "✈️ Şifre Sıfırlama Bağlantısı Gönder"; }
+    authError(map[e.code] || "Şifre sıfırlama gönderilemedi.");
   }
 }
-
-async function resetPasswordByEmail() { return openForgotPasswordModal(); }
-async function resetPasswordByUsername() { return openForgotPasswordModal(); }
+async function resetPasswordByUsername() { return resetPasswordByEmail(); }
 
 async function createOrUpdateUserProfile(user, extra = {}) {
   const db = firebase.firestore();
+  const username = normalizeUsername(extra.username || old.username || ((user.email || "").split("@")[0]));
   const ref = db.collection(SMART_COLLECTION).doc(userDocId(user.uid));
   const snap = await ref.get();
   const old = snap.exists ? snap.data() : {};
-  const username = normalizeUsername(extra.username || old.username || ((user.email || "").split("@")[0]));
   const isAdminUser = user.email === ADMIN_EMAIL || username === ADMIN_USERNAME || old.role === "admin";
   const base = {
     type: "user",
@@ -486,13 +448,3 @@ saveRecords = function() {
 };
 
 window.addEventListener("load", initMesaiFirebase);
-
-
-// V59: Şifremi Unuttum modalı dış tık / ESC kapatma
-document.addEventListener("keydown", function(e){
-  if (e.key === "Escape") closeForgotPasswordModal();
-});
-document.addEventListener("click", function(e){
-  const modal = document.getElementById("forgotPasswordModal");
-  if (modal && modal.classList.contains("show") && e.target === modal) closeForgotPasswordModal();
-});
