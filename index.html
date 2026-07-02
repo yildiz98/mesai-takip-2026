@@ -930,6 +930,150 @@
 
 
 
+    /* V59 Şifremi Unuttum özel ekranı */
+    .forgot-modal{
+      position:fixed;
+      inset:0;
+      z-index:10060;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(1,7,15,.78);
+      backdrop-filter:blur(8px);
+    }
+    .forgot-modal.show{display:flex;}
+    .forgot-box{
+      width:min(760px,100%);
+      max-height:92vh;
+      overflow:auto;
+      color:#fff;
+      background:
+        radial-gradient(circle at top right, rgba(244,176,0,.10), transparent 34%),
+        linear-gradient(180deg, rgba(9,25,48,.98), rgba(3,11,22,.98));
+      border:1.5px solid rgba(244,176,0,.55);
+      border-radius:24px;
+      box-shadow:0 30px 90px rgba(0,0,0,.62);
+      padding:26px 28px 24px;
+      position:relative;
+    }
+    .forgot-close{
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:42px!important;
+      height:42px!important;
+      min-height:42px!important;
+      padding:0!important;
+      margin:0!important;
+      border-radius:50%!important;
+      background:rgba(255,255,255,.05)!important;
+      border:1px solid rgba(244,176,0,.35)!important;
+      color:var(--gold-2)!important;
+      box-shadow:none!important;
+      font-size:24px!important;
+      line-height:1!important;
+    }
+    .forgot-head{text-align:center;padding:10px 42px 18px;}
+    .forgot-lock{
+      width:74px;
+      height:74px;
+      margin:0 auto 12px;
+      border-radius:22px;
+      display:grid;
+      place-items:center;
+      font-size:42px;
+      color:var(--gold-2);
+      background:rgba(244,176,0,.08);
+      border:1px solid rgba(244,176,0,.35);
+      box-shadow:0 0 28px rgba(244,176,0,.13);
+    }
+    .forgot-head h3{margin:0;color:#fff;font-size:30px;letter-spacing:.5px;text-transform:uppercase;}
+    .forgot-head p{margin:10px auto 0;color:#dbeafe;line-height:1.45;font-size:16px;max-width:520px;}
+    .forgot-info{
+      display:grid;
+      grid-template-columns:52px 1fr;
+      gap:14px;
+      padding:16px;
+      border-radius:17px;
+      border:1px solid rgba(59,130,246,.55);
+      background:linear-gradient(135deg, rgba(29,78,216,.18), rgba(5,22,44,.75));
+      margin-bottom:14px;
+    }
+    .forgot-info .info-dot{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,#60a5fa,#1d4ed8);
+      color:#fff;
+      font-weight:900;
+      font-size:22px;
+    }
+    .forgot-info h4,.forgot-steps h4,.forgot-notes h4{margin:0 0 8px;color:#60a5fa;font-size:18px;}
+    .forgot-info p{margin:0;color:#eef6ff;line-height:1.55;}
+    .forgot-form{
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:17px;
+      padding:16px;
+      background:rgba(7,22,44,.62);
+      margin-bottom:14px;
+    }
+    .forgot-form label{font-size:15px;margin-top:0;color:#fff;}
+    .forgot-input-wrap{position:relative;}
+    .forgot-input-wrap span{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:20px;opacity:.9;}
+    .forgot-input-wrap input{padding-left:48px!important;min-height:56px!important;font-size:16px!important;border-color:rgba(244,176,0,.7)!important;}
+    #sendResetBtn{
+      min-height:56px;
+      border-radius:14px;
+      font-size:16px;
+      letter-spacing:.2px;
+      background:linear-gradient(135deg,#ffd15c,#f4b000 55%,#d99400)!important;
+    }
+    .forgot-steps,.forgot-notes,.forgot-security{
+      border-radius:17px;
+      padding:16px;
+      margin-top:14px;
+      background:rgba(7,22,44,.58);
+      border:1px solid rgba(244,176,0,.22);
+    }
+    .forgot-steps{border-color:rgba(59,130,246,.45);}
+    .forgot-step{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;margin:11px 0;color:#f8fafc;line-height:1.45;}
+    .forgot-step b{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#0f57d8;color:#fff;}
+    .forgot-notes ul{margin:0;padding-left:20px;line-height:1.7;color:#f8fafc;}
+    .forgot-notes li::marker{color:var(--gold);}
+    .forgot-security{
+      display:grid;
+      grid-template-columns:42px 1fr;
+      gap:12px;
+      border-color:rgba(34,197,94,.45);
+      background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(7,22,44,.58));
+      color:#dcfce7;
+    }
+    .forgot-security .shield{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(34,197,94,.20);font-size:22px;}
+    .forgot-status{display:none;margin-top:12px;padding:12px;border-radius:13px;text-align:center;font-weight:800;line-height:1.4;}
+    .forgot-status.ok{display:block;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.42);color:#86efac;}
+    .forgot-status.warn{display:block;background:rgba(220,38,38,.14);border:1px solid rgba(220,38,38,.42);color:#fecaca;}
+    .forgot-actions{display:flex;gap:10px;margin-top:16px;}
+    .forgot-actions button{margin:0!important;}
+    .forgot-actions .ghost{background:#07162c!important;color:var(--gold-2)!important;border:1px solid rgba(244,176,0,.55)!important;box-shadow:none!important;}
+    @media (max-width:620px){
+      .forgot-modal{padding:10px;align-items:flex-start;}
+      .forgot-box{border-radius:20px;padding:20px 14px 16px;max-height:95vh;}
+      .forgot-head{padding:8px 36px 14px;}
+      .forgot-lock{width:58px;height:58px;font-size:32px;border-radius:18px;}
+      .forgot-head h3{font-size:24px;}
+      .forgot-head p{font-size:13.5px;}
+      .forgot-info{grid-template-columns:40px 1fr;padding:13px;gap:10px;}
+      .forgot-info .info-dot{width:34px;height:34px;font-size:18px;}
+      .forgot-info h4,.forgot-steps h4,.forgot-notes h4{font-size:16px;}
+      .forgot-info p,.forgot-step,.forgot-notes ul,.forgot-security{font-size:13px;}
+      .forgot-form{padding:13px;}
+      .forgot-actions{flex-direction:column;}
+    }
+
+
     /* V53 Kayıt Bilgilendirme Modalı */
     .register-info-modal{
       position:fixed;
@@ -1175,7 +1319,7 @@
       <label id="passwordLabel">Şifre</label>
       <input id="authPassword" type="password" autocomplete="current-password" placeholder="Şifrenizi girin">
       <button id="authSubmit" type="button" onclick="submitAuth()">Giriş Yap</button>
-      <button id="forgotPasswordBtn" class="secondary" type="button" onclick="resetPasswordByEmail()">🔑 Şifremi Unuttum</button>
+      <button id="forgotPasswordBtn" class="secondary" type="button" onclick="openForgotPasswordModal()">🔑 Şifremi Unuttum</button>
       <button id="registerActionBtn" type="button" onclick="openRegisterInfo()">Kayıt Ol</button>
 
       <div class="auth-update">
@@ -1187,6 +1331,63 @@
 
       <div id="authError" class="auth-error"></div>
       <div class="auth-credit">Hazırlayan <b>PM.Hüseyin YILDIZ</b></div>
+    </div>
+
+
+    <div id="forgotPasswordModal" class="forgot-modal" aria-hidden="true">
+      <div class="forgot-box" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+        <button class="forgot-close" type="button" onclick="closeForgotPasswordModal()" aria-label="Kapat">×</button>
+        <div class="forgot-head">
+          <div class="forgot-lock">🔐</div>
+          <h3 id="forgotTitle">Şifremi Unuttum</h3>
+          <p>Hesabınıza bağlı şifre sıfırlama bağlantısını kayıtlı e-posta adresinize gönderelim.</p>
+        </div>
+
+        <div class="forgot-info">
+          <div class="info-dot">i</div>
+          <div>
+            <h4>Bilgilendirme</h4>
+            <p>Güvenliğiniz için şifre sıfırlama işlemleri yalnızca kayıt olurken sisteme eklediğiniz e-posta adresi üzerinden yapılmaktadır.</p>
+          </div>
+        </div>
+
+        <div class="forgot-form">
+          <label for="forgotEmailInput">Kayıtlı E-posta Adresiniz</label>
+          <div class="forgot-input-wrap">
+            <span>✉️</span>
+            <input id="forgotEmailInput" type="email" autocomplete="email" placeholder="ornek@email.com">
+          </div>
+          <button id="sendResetBtn" type="button" onclick="sendForgotPasswordEmail()">✈️ Şifre Sıfırlama Bağlantısı Gönder</button>
+          <div id="forgotStatus" class="forgot-status"></div>
+        </div>
+
+        <div class="forgot-steps">
+          <h4>Nasıl Çalışır?</h4>
+          <div class="forgot-step"><b>1</b><span>Kayıtlı e-posta adresinizi yazınız.</span></div>
+          <div class="forgot-step"><b>2</b><span>“Şifre Sıfırlama Bağlantısı Gönder” butonuna basınız.</span></div>
+          <div class="forgot-step"><b>3</b><span>E-posta kutunuzu kontrol ediniz.</span></div>
+          <div class="forgot-step"><b>4</b><span>Gelen bağlantıya tıklayarak yeni şifrenizi belirleyiniz.</span></div>
+          <div class="forgot-step"><b>5</b><span>Daha sonra kullanıcı adınız ve yeni şifrenizle sisteme giriş yapabilirsiniz.</span></div>
+        </div>
+
+        <div class="forgot-notes">
+          <h4>Önemli Notlar</h4>
+          <ul>
+            <li>Bağlantı sadece kayıtlı e-posta adresinize gönderilir.</li>
+            <li>Gelen Kutusu ve Spam / Gereksiz klasörlerini kontrol etmeyi unutmayınız.</li>
+            <li>Sistem mevcut şifrenizi gösteremez ve size yeni şifre oluşturamaz.</li>
+          </ul>
+        </div>
+
+        <div class="forgot-security">
+          <div class="shield">🔒</div>
+          <div><strong>Güvenlik Bilgisi</strong><br>Şifre sıfırlama bağlantıları tek kullanımlıktır ve belirli bir süre sonra geçerliliğini kaybeder.</div>
+        </div>
+
+        <div class="forgot-actions">
+          <button class="ghost" type="button" onclick="closeForgotPasswordModal()">← Giriş ekranına dön</button>
+        </div>
+      </div>
     </div>
 
     <div id="registerInfoModal" class="register-info-modal" aria-hidden="true">
