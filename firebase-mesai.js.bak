@@ -250,10 +250,10 @@ async function resetPasswordByUsername() { return openForgotPasswordModal(); }
 
 async function createOrUpdateUserProfile(user, extra = {}) {
   const db = firebase.firestore();
+  const username = normalizeUsername(extra.username || old.username || ((user.email || "").split("@")[0]));
   const ref = db.collection(SMART_COLLECTION).doc(userDocId(user.uid));
   const snap = await ref.get();
   const old = snap.exists ? snap.data() : {};
-  const username = normalizeUsername(extra.username || old.username || ((user.email || "").split("@")[0]));
   const isAdminUser = user.email === ADMIN_EMAIL || username === ADMIN_USERNAME || old.role === "admin";
   const base = {
     type: "user",
