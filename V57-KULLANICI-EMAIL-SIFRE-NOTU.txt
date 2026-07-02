@@ -1,0 +1,6 @@
+V57 Güncelleme Notu
+- Yeni kayıtlarda Kullanıcı Adı + E-posta + Şifre zorunlu yapıldı.
+- Giriş yine Kullanıcı Adı + Şifre ile yapılır.
+- Şifremi Unuttum artık kullanıcı adıyla değil, kayıtlı e-posta adresiyle Firebase şifre sıfırlama bağlantısı gönderir.
+- Eski kullanıcılar için kullanıcıadı@mesaitakip.app geriye dönük giriş desteği korunmuştur.
+- Firebase Firestore Rules güncellendi. firestore.rules dosyasını Firebase Console > Firestore Rules kısmında yayınlamayı unutmayın.
