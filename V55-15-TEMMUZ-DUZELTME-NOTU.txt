@@ -1,0 +1,15 @@
+V55 - 15 Temmuz Mesai Hesabı Düzeltmesi
+
+Yapılan düzeltme:
+- Sistem Türkiye + KKTC resmi tatillerini birlikte kullanmaya devam eder.
+- Ancak 15 Temmuz Demokrasi ve Milli Birlik Günü mesai hedef hesabından çıkarıldı.
+- 15 Temmuz artık normal çalışma günü olarak hesaplanır.
+- Düzeltme sadece 2026 için değil, CURRENT_YEAR üzerinden tüm yıllar için korumalı yapıldı.
+
+Teknik not:
+app.js içine EXCLUDED_HOLIDAY_DATES filtresi eklendi.
+Bu filtre sayesinde 15 Temmuz tatil listesinde kalsa bile HOLIDAYS içine alınmaz ve getTarget hesabını düşürmez.
+
+Temmuz 2026 kontrol:
+- Eski hesap: 167,5 normal saat x %25 = 41,875 saat
+- Yeni hesap: 175 normal saat x %25 = 43,75 saat
