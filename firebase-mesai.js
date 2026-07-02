@@ -35,41 +35,21 @@ function recordDocId(uid, year) { return `mesai_records_${safeDocId(uid)}_${safe
 function normalizeUsername(username) {
   return String(username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
 }
-function legacyUsernameToEmail(username) {
+function usernameToEmail(username) {
   const clean = normalizeUsername(username);
   if (!clean) throw new Error("Kullanıcı adı boş olamaz.");
   return `${clean}@mesaitakip.app`;
-}
-function normalizeEmail(email) {
-  return String(email || "").trim().toLowerCase();
-}
-function usernameIndexDoc(username) {
-  return firebase.firestore().collection("mesaiUsernames").doc(normalizeUsername(username));
-}
-async function getLoginEmailForUsername(username) {
-  const clean = normalizeUsername(username);
-  if (!clean) throw new Error("Kullanıcı adı boş olamaz.");
-  try {
-    const snap = await usernameIndexDoc(clean).get();
-    const data = snap.exists ? (snap.data() || {}) : null;
-    if (data && data.email) return normalizeEmail(data.email);
-  } catch (e) {
-    console.warn("Kullanıcı adı e-posta eşleşmesi okunamadı, eski giriş deneniyor:", e);
-  }
-  // Eski sürümde kayıtlı kullanıcılar için geriye dönük destek.
-  return legacyUsernameToEmail(clean);
 }
 function setAuthLoading(loading) {
   const submitBtn = document.getElementById("authSubmit");
   const loginBtn = document.getElementById("loginTab");
   const registerBtn = document.getElementById("registerTab");
   const actionBtn = document.getElementById("registerActionBtn");
-  const resetBtn = document.getElementById("forgotPasswordBtn");
-  [submitBtn, loginBtn, registerBtn, actionBtn, resetBtn].forEach(btn => { if (btn) btn.disabled = loading; });
+  [submitBtn, loginBtn, registerBtn, actionBtn].forEach(btn => { if (btn) btn.disabled = loading; });
   if (submitBtn) submitBtn.textContent = loading ? "Lütfen bekleyin..." : (authMode === "register" ? "Kayıt Ol" : "Giriş Yap");
 }
 function getUsername() {
-  try { return cloudUserProfile?.username || (firebase.auth().currentUser?.email || "").split("@")[0]; } catch { return ""; }
+  try { return (firebase.auth().currentUser?.email || "").split("@")[0]; } catch { return ""; }
 }
 function authError(msg) {
   const el = document.getElementById("authError");
@@ -85,16 +65,10 @@ function setAuthMode(mode) {
   authMode = mode;
   clearAuthError();
   const nameWrap = document.getElementById("nameWrap");
-  const emailWrap = document.getElementById("emailWrap");
-  const passwordLabel = document.getElementById("passwordLabel");
-  const forgotBtn = document.getElementById("forgotPasswordBtn");
   const loginBtn = document.getElementById("loginTab");
   const registerBtn = document.getElementById("registerTab");
   const submitBtn = document.getElementById("authSubmit");
   if (nameWrap) nameWrap.style.display = mode === "register" ? "block" : "none";
-  if (emailWrap) emailWrap.style.display = mode === "register" ? "block" : "none";
-  if (passwordLabel) passwordLabel.textContent = mode === "register" ? "Şifre" : "Şifre";
-  if (forgotBtn) forgotBtn.style.display = mode === "register" ? "none" : "block";
   if (loginBtn) loginBtn.classList.toggle("ghost", mode !== "login");
   if (registerBtn) registerBtn.classList.toggle("ghost", mode !== "register");
   if (submitBtn) submitBtn.textContent = mode === "register" ? "Kayıt Ol" : "Giriş Yap";
@@ -146,13 +120,10 @@ async function loginOrRegister() {
   const username = normalizeUsername(rawUsername);
   const password = passwordEl?.value || "";
   const adSoyad = document.getElementById("authName")?.value || "";
-  const realEmail = normalizeEmail(document.getElementById("authEmail")?.value || "");
   if (usernameEl) usernameEl.value = username;
   if (!username || !password) return authError("Kullanıcı adı ve şifre gerekli.");
   if (password.length < 6) return authError("Şifre en az 6 karakter olmalı.");
-  if (authMode === "register" && !realEmail) return authError("Kayıt için e-posta adresi gerekli.");
-  if (authMode === "register" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(realEmail)) return authError("Geçerli bir e-posta adresi yazınız.");
-  const email = authMode === "register" ? realEmail : await getLoginEmailForUsername(username);
+  const email = usernameToEmail(username);
   authInProgress = true;
   setAuthLoading(true);
   try {
@@ -162,15 +133,7 @@ async function loginOrRegister() {
       // kayıt öncesi kullanıcı adı kontrolü "permission-denied" hatasına sebep oluyordu.
       // Aynı kullanıcı adı kontrolünü Firebase Authentication e-posta benzersizliği yapar.
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
-      await createOrUpdateUserProfile(cred.user, { adSoyad: adSoyad || username, username, email, role: "personel" });
-      await usernameIndexDoc(username).set({
-        username,
-        email,
-        uid: cred.user.uid,
-        app: APP_TAG,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: false });
+      await createOrUpdateUserProfile(cred.user, { adSoyad: adSoyad || username, role: "personel" });
     } else {
       await firebase.auth().signInWithEmailAndPassword(email, password);
     }
@@ -179,8 +142,8 @@ async function loginOrRegister() {
       "auth/user-not-found": "Kullanıcı bulunamadı.",
       "auth/wrong-password": "Şifre hatalı.",
       "auth/invalid-credential": "Kullanıcı adı veya şifre hatalı.",
-      "auth/email-already-in-use": "Bu e-posta adresi zaten kayıtlı. Giriş Yap kısmından giriş yapın veya Şifremi Unuttum kullanın.",
-      "auth/invalid-email": "E-posta adresi geçersiz.",
+      "auth/email-already-in-use": "Bu kullanıcı adı zaten kayıtlı. Giriş Yap kısmından giriş yapın veya admin eski kaydı pasif yapsın.",
+      "auth/invalid-email": "Kullanıcı adı geçersiz. Türkçe karakter, boşluk veya özel karakter kullanmayın.",
       "auth/network-request-failed": "İnternet bağlantısı yok.",
       "permission-denied": "Firebase yetki izni reddedildi. Rules yayınlanmış olmalı ve işlem giriş yaptıktan sonra yapılmalı."
     };
@@ -191,28 +154,18 @@ async function loginOrRegister() {
   }
 }
 
-async function resetPasswordByEmail() {
+async function resetPasswordByUsername() {
   try {
-    clearAuthError();
-    const email = normalizeEmail(prompt("Şifre sıfırlama bağlantısı için kayıtlı e-posta adresinizi yazınız:"));
-    if (!email) return authError("Şifre sıfırlama için e-posta adresi gerekli.");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return authError("Geçerli bir e-posta adresi yazınız.");
-    await firebase.auth().sendPasswordResetEmail(email);
-    authError("Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Gelen kutusu ve spam klasörünü kontrol edin.");
-  } catch (e) {
-    const map = {
-      "auth/user-not-found": "Bu e-posta adresiyle kayıtlı hesap bulunamadı.",
-      "auth/invalid-email": "E-posta adresi geçersiz.",
-      "auth/too-many-requests": "Çok fazla deneme yapıldı. Lütfen bir süre sonra tekrar deneyin."
-    };
-    authError(map[e.code] || "Şifre sıfırlama gönderilemedi.");
-  }
+    const username = document.getElementById("authUsername").value;
+    if (!username) return authError("Şifre sıfırlama için kullanıcı adını yaz.");
+    await firebase.auth().sendPasswordResetEmail(usernameToEmail(username));
+    authError("Şifre sıfırlama bağlantısı gönderildi. Not: Bu kullanıcı adı teknik olarak @mesaitakip.app adresine bağlıdır.");
+  } catch (e) { authError("Şifre sıfırlama gönderilemedi. Firebase Console üzerinden şifreyi yenileyebilirsin."); }
 }
-async function resetPasswordByUsername() { return resetPasswordByEmail(); }
 
 async function createOrUpdateUserProfile(user, extra = {}) {
   const db = firebase.firestore();
-  const username = normalizeUsername(extra.username || old.username || ((user.email || "").split("@")[0]));
+  const username = (user.email || "").split("@")[0];
   const ref = db.collection(SMART_COLLECTION).doc(userDocId(user.uid));
   const snap = await ref.get();
   const old = snap.exists ? snap.data() : {};
@@ -221,8 +174,7 @@ async function createOrUpdateUserProfile(user, extra = {}) {
     type: "user",
     app: APP_TAG,
     uid: user.uid,
-    email: extra.email || user.email,
-    authEmail: user.email,
+    email: user.email,
     username,
     adSoyad: extra.adSoyad || old.adSoyad || username,
     role: isAdminUser ? "admin" : (extra.role || old.role || "personel"),

@@ -922,7 +922,7 @@
       .auth-note{font-size:14px;margin-bottom:14px;}
       .auth-card label{font-size:14px;margin-top:12px;}
       .auth-card input{min-height:48px;font-size:14px;border-radius:12px;}
-      #authSubmit,#registerActionBtn,#loginBackBtn,#forgotPasswordBtn{min-height:50px;font-size:16px;border-radius:13px;}
+      #authSubmit,#registerActionBtn,#loginBackBtn{min-height:50px;font-size:16px;border-radius:13px;}
       .auth-update{font-size:13px!important;padding:13px!important;border-radius:14px!important;line-height:1.48!important;}
       .auth-update strong{font-size:16px;}
       .auth-credit{font-size:13px;}
@@ -1168,20 +1168,15 @@
       </div>
       <label>Kullanıcı Adı</label>
       <input id="authUsername" type="text" autocomplete="username" placeholder="Kullanıcı adınızı girin">
-      <div id="emailWrap" style="display:none">
-        <label>E-posta Adresi</label>
-        <input id="authEmail" type="email" autocomplete="email" placeholder="E-posta adresinizi girin">
-      </div>
-      <label id="passwordLabel">Şifre</label>
+      <label>Şifre</label>
       <input id="authPassword" type="password" autocomplete="current-password" placeholder="Şifrenizi girin">
       <button id="authSubmit" type="button" onclick="submitAuth()">Giriş Yap</button>
-      <button id="forgotPasswordBtn" class="secondary" type="button" onclick="resetPasswordByEmail()">🔑 Şifremi Unuttum</button>
       <button id="registerActionBtn" type="button" onclick="openRegisterInfo()">Kayıt Ol</button>
 
       <div class="auth-update">
         <strong>📢 Sistem Güncellendi</strong>
         Mesai Takip uygulaması güvenlik ve veri koruması amacıyla güncellenmiştir.<br>
-        Lütfen <b>Kayıt Ol</b> bölümünden kendinize kullanıcı adı, e-posta ve şifre oluşturunuz.<br>
+        Lütfen <b>Kayıt Ol</b> bölümünden kendinize bir kullanıcı adı ve şifre oluşturunuz.<br>
         Bundan sonra tüm mesai kayıtlarınız güvenli şekilde bulutta saklanacak ve telefon değiştirseniz bile hesabınıza giriş yaparak verilerinize erişebileceksiniz.
       </div>
 
