@@ -401,10 +401,12 @@ async function renderAdminPanel() {
     return acc;
   }, {});
   visibleUsers.sort((a, b) => {
-    const da = usernameCounts[normalizeUsername(a.username || "")] || 0;
-    const db = usernameCounts[normalizeUsername(b.username || "")] || 0;
-    if (db !== da) return db - da;
-    return String(a.username || "").localeCompare(String(b.username || ""), "tr");
+    const getTime = (u) => {
+      if (u?.createdAt?.seconds) return u.createdAt.seconds * 1000;
+      if (typeof u?.createdAt === "number") return u.createdAt;
+      return new Date(u?.createdAt || 0).getTime() || 0;
+    };
+    return getTime(b) - getTime(a);
   });
   const active = visibleUsers.filter(u => !u.blocked);
   const totalEl = document.getElementById("adminTotalUsers");
