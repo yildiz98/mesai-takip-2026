@@ -1,0 +1,44 @@
+MESAI TAKIP - BLAZE GEREKTIRMEYEN VERCEL ADMIN HESAP KURTARMA
+
+AMAC
+Admin panelindeki "🔑 Şifre Ata" butonunun Firebase Cloud Functions yerine Vercel Function kullanması.
+Firebase SmartApart projesi Blaze'e yükseltilmez.
+
+DOSYALAR
+- api/admin-set-temporary-password.js : güvenli sunucu endpoint'i
+- package.json : Firebase Admin SDK bağımlılığı ve Node 22
+- vercel.json : Vercel Function ayarı
+- firebase-mesai.js : admin butonu Vercel endpoint'ine bağlandı
+- index.html : Firebase Functions script'i kaldırıldı
+
+VERCEL ENVIRONMENT VARIABLE
+Vercel Project Settings > Environment Variables bölümüne sadece Vercel'de şu değişken eklenir:
+
+FIREBASE_SERVICE_ACCOUNT_JSON = Firebase service account JSON dosyasının TAM İÇERİĞİ
+
+Bu JSON dosyası GitHub'a yüklenmez. Sohbete de gönderilmez.
+
+Firebase service account JSON oluşturma:
+Firebase Console > SmartApart > Project settings > Service accounts > Generate new private key
+
+ÖNEMLİ
+Service account JSON gizli anahtardır. GitHub'a, public ZIP'e veya frontend JavaScript dosyasına koyma.
+
+DEPLOY
+Vercel'de GitHub repository olarak mesai-takip-2026 seçilir.
+Root Directory: ./
+Framework Preset: Other
+Node.js: 22.x
+Deploy.
+
+DEPLOY SONRASI
+Vercel sana örneğin https://mesai-takip-2026.vercel.app gibi bir adres verir.
+Bu adres firebase-mesai.js içindeki MESAI_BACKEND_URL değerine yazılmalıdır.
+
+TEST
+1) Gerçek admin ile Mesai Takip'e giriş yap.
+2) Admin panelini aç.
+3) Bir personelde "🔑 Şifre Ata" seç.
+4) En az 8 karakter geçici şifre yaz.
+5) Personel bu geçici şifreyle giriş yapınca yeni şifre modalı açılır.
+6) Yeni şifre kaydedilir ve forcePasswordChange false yapılır.

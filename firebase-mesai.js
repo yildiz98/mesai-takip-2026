@@ -15,6 +15,8 @@ const MESAI_FIREBASE_CONFIG = {
 
 const ADMIN_EMAIL = "admin@mesaitakip.app";
 const ADMIN_USERNAME = "admin";
+// Vercel backend adresi: Vercel deploy ettikten sonra buraya kendi adresini yaz.
+const MESAI_BACKEND_URL = "https://MESAI-TAKIP-BACKEND.vercel.app";
 const SMART_COLLECTION = "smartapart";
 const APP_TAG = "mesaiTakip";
 let authMode = "login";
@@ -417,10 +419,28 @@ async function adminSetTemporaryPassword() {
     if (targetUid === firebase.auth().currentUser?.uid) return setAdminPasswordStatus("Kendi admin hesabının şifresini bu ekrandan değiştirme. Firebase hesap ayarlarını kullan.");
     const btn = document.getElementById("adminSetPasswordBtn");
     if (btn) { btn.disabled = true; btn.textContent = "Atanıyor..."; }
-    if (!firebase.functions) throw new Error("Firebase Functions kütüphanesi yüklenmemiş. Sayfayı güncelleyin.");
-    const callable = firebase.functions().httpsCallable("adminSetTemporaryPassword");
-    const result = await callable({ targetUid, temporaryPassword: password });
-    setAdminPasswordStatus(result?.data?.message || "Geçici şifre başarıyla atandı.", true);
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error("Admin oturumu bulunamadı. Tekrar giriş yapın.");
+    if (!MESAI_BACKEND_URL || MESAI_BACKEND_URL.includes("MESAI-TAKIP-BACKEND")) {
+      throw new Error("Vercel backend adresi henüz tanımlanmamış.");
+    }
+    const idToken = await user.getIdToken(true);
+    const response = await fetch(`${MESAI_BACKEND_URL.replace(/\/$/, "")}/api/admin-set-temporary-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
+      },
+      body: JSON.stringify({ targetUid, temporaryPassword: password })
+    });
+    let result = {};
+    try { result = await response.json(); } catch (_) {}
+    if (!response.ok) {
+      const err = new Error(result?.message || "Geçici şifre atanamadı.");
+      err.code = result?.code || `http-${response.status}`;
+      throw err;
+    }
+    setAdminPasswordStatus(result?.message || "Geçici şifre başarıyla atandı.", true);
     setTimeout(() => { closeAdminPasswordModal(); renderAdminPanel(); }, 1200);
   } catch (e) {
     console.error("Admin geçici şifre hatası", e);
@@ -429,7 +449,14 @@ async function adminSetTemporaryPassword() {
       "functions/permission-denied": "Bu işlem için admin yetkisi gerekli.",
       "functions/not-found": "Kullanıcının Firebase hesabı bulunamadı.",
       "functions/invalid-argument": "Geçici şifre veya kullanıcı bilgisi geçersiz.",
-      "functions/failed-precondition": "Kullanıcının hesap durumu uygun değil."
+      "functions/failed-precondition": "Kullanıcının hesap durumu uygun değil.",
+      "unauthenticated": "Admin oturumu bulunamadı. Tekrar giriş yapın.",
+      "permission-denied": "Bu işlem için admin yetkisi gerekli.",
+      "not-found": "Kullanıcının Firebase hesabı bulunamadı.",
+      "invalid-argument": "Geçici şifre veya kullanıcı bilgisi geçersiz.",
+      "failed-precondition": "Kullanıcının hesap durumu uygun değil.",
+      "backend-config": "Vercel backend adresi henüz tanımlanmamış.",
+      "http-404": "Vercel backend bulunamadı. Adresi kontrol edin."
     };
     setAdminPasswordStatus(map[e.code] || e.message || "Geçici şifre atanamadı.");
   } finally {

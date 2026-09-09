@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/admin-set-temporary-password.js": {
+      "maxDuration": 30
+    }
+  }
+}
