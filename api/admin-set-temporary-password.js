@@ -123,6 +123,20 @@ module.exports = async function handler(req, res) {
       updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
 
+    // Kullanıcı adı -> e-posta eşleşmesini de hedef Firebase hesabıyla
+    // senkronize et. Eski/çift kayıtlarda kullanıcı adı doğru hesabın
+    // yerine eski bir e-postaya yönlenmesin.
+    const username = String(profile.username || '').trim().toLowerCase();
+    if (username && target.email) {
+      await db.collection('mesaiUsernames').doc(username).set({
+        username,
+        email: String(target.email).toLowerCase(),
+        uid: target.uid,
+        app: APP_TAG,
+        updatedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
     return json(res, 200, {
       ok: true,
       message: `${profile.adSoyad || profile.username || 'Kullanıcı'} için geçici şifre atandı. İlk girişte yeni şifre belirlemesi zorunlu.`
