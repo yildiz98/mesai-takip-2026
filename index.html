@@ -1385,36 +1385,7 @@
 
 
 
-    <div id="adminPasswordModal" class="admin-password-modal" aria-hidden="true">
-      <div class="admin-password-box" role="dialog" aria-modal="true" aria-labelledby="adminPasswordTitle">
-        <h3 id="adminPasswordTitle">🔐 Hesap Kurtarma</h3>
-        <p class="small">Seçilen kullanıcıya geçici şifre atanır. Kullanıcı bu şifreyle ilk girişinde kendi kalıcı şifresini belirlemek zorunda olur.</p>
-        <div id="adminPasswordUser" class="admin-password-user">-</div>
-        <input id="adminPasswordTargetUid" type="hidden">
-        <label>Geçici Şifre</label>
-        <input id="adminPasswordInput" type="password" autocomplete="new-password" placeholder="En az 8 karakter">
-        <label>Geçici Şifre Tekrar</label>
-        <input id="adminPasswordConfirm" type="password" autocomplete="new-password" placeholder="Şifreyi tekrar girin">
-        <div id="adminPasswordStatus" class="admin-password-status"></div>
-        <div class="admin-password-buttons">
-          <button class="secondary" type="button" onclick="closeAdminPasswordModal()">Vazgeç</button>
-          <button id="adminSetPasswordBtn" type="button" onclick="adminSetTemporaryPassword()">🔑 Geçici Şifre Ata</button>
-        </div>
-      </div>
-    </div>
 
-    <div id="forcePasswordModal" class="force-password-modal" aria-hidden="true">
-      <div class="force-password-box" role="dialog" aria-modal="true" aria-labelledby="forcePasswordTitle">
-        <h3 id="forcePasswordTitle">🔐 Yeni Şifrenizi Belirleyin</h3>
-        <p class="small">Admin tarafından verilen geçici şifreyle giriş yaptınız. Güvenliğiniz için şimdi kendi şifrenizi oluşturun.</p>
-        <label>Yeni Şifre</label>
-        <input id="forcePasswordInput" type="password" autocomplete="new-password" placeholder="En az 8 karakter">
-        <label>Yeni Şifre Tekrar</label>
-        <input id="forcePasswordConfirm" type="password" autocomplete="new-password" placeholder="Şifreyi tekrar girin">
-        <div id="forcePasswordStatus" class="force-password-status"></div>
-        <button id="forcePasswordBtn" type="button" onclick="completeForcedPasswordChange()">🔐 Yeni Şifremi Kaydet</button>
-      </div>
-    </div>
 
     <div id="forgotPasswordModal" class="forgot-modal" aria-hidden="true">
       <div class="forgot-box" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
@@ -1552,6 +1523,38 @@
       </div>
     </div>
   </div>
+
+
+    <div id="adminPasswordModal" class="admin-password-modal" aria-hidden="true">
+      <div class="admin-password-box" role="dialog" aria-modal="true" aria-labelledby="adminPasswordTitle">
+        <h3 id="adminPasswordTitle">🔐 Hesap Kurtarma</h3>
+        <p class="small">Seçilen kullanıcıya geçici şifre atanır. Kullanıcı bu şifreyle ilk girişinde kendi kalıcı şifresini belirlemek zorunda olur.</p>
+        <div id="adminPasswordUser" class="admin-password-user">-</div>
+        <input id="adminPasswordTargetUid" type="hidden">
+        <label>Geçici Şifre</label>
+        <input id="adminPasswordInput" type="password" autocomplete="new-password" placeholder="En az 8 karakter">
+        <label>Geçici Şifre Tekrar</label>
+        <input id="adminPasswordConfirm" type="password" autocomplete="new-password" placeholder="Şifreyi tekrar girin">
+        <div id="adminPasswordStatus" class="admin-password-status"></div>
+        <div class="admin-password-buttons">
+          <button class="secondary" type="button" onclick="closeAdminPasswordModal()">Vazgeç</button>
+          <button id="adminSetPasswordBtn" type="button" onclick="adminSetTemporaryPassword()">🔑 Geçici Şifre Ata</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="forcePasswordModal" class="force-password-modal" aria-hidden="true">
+      <div class="force-password-box" role="dialog" aria-modal="true" aria-labelledby="forcePasswordTitle">
+        <h3 id="forcePasswordTitle">🔐 Yeni Şifrenizi Belirleyin</h3>
+        <p class="small">Admin tarafından verilen geçici şifreyle giriş yaptınız. Güvenliğiniz için şimdi kendi şifrenizi oluşturun.</p>
+        <label>Yeni Şifre</label>
+        <input id="forcePasswordInput" type="password" autocomplete="new-password" placeholder="En az 8 karakter">
+        <label>Yeni Şifre Tekrar</label>
+        <input id="forcePasswordConfirm" type="password" autocomplete="new-password" placeholder="Şifreyi tekrar girin">
+        <div id="forcePasswordStatus" class="force-password-status"></div>
+        <button id="forcePasswordBtn" type="button" onclick="completeForcedPasswordChange()">🔐 Yeni Şifremi Kaydet</button>
+      </div>
+    </div>
 
   <header>
     <img class="logo" src="polis-logo.png" alt="Polis Logo">
@@ -1801,7 +1804,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=63"></script>
-  <script src="firebase-mesai.js?v=63"></script>
+  <script src="app.js?v=64"></script>
+  <script src="firebase-mesai.js?v=64"></script>
 </body>
 </html>
