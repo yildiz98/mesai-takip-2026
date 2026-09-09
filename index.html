@@ -1255,6 +1255,35 @@
     }
 
     /* V52 Admin panel: silinen kullanıcı gizleme + kompakt işlem butonları */
+    .admin-search-wrap{
+      margin:14px 0 12px;
+      padding:12px;
+      border:1px solid rgba(0,229,255,.16);
+      border-radius:12px;
+      background:rgba(5,11,20,.35);
+    }
+    .admin-search-wrap label{
+      display:block;
+      margin-bottom:6px;
+      font-size:12px;
+      font-weight:700;
+    }
+    .admin-search-wrap input{
+      width:100%;
+      box-sizing:border-box;
+      padding:11px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      color:inherit;
+      outline:none;
+    }
+    .admin-search-wrap input:focus{
+      border-color:rgba(0,229,255,.55);
+      box-shadow:0 0 0 2px rgba(0,229,255,.08);
+    }
+    .admin-search-wrap .small{ margin-top:6px; }
+
     .admin-table th, .admin-table td{ vertical-align:middle; }
     .admin-table td:last-child{ min-width:126px; }
     .admin-actions{
@@ -1773,9 +1802,17 @@
       <section id="admin-section" class="card section-anchor" style="display:none">
         <h2>Admin Paneli</h2>
         <div class="dashboard" style="grid-template-columns:repeat(3,1fr)">
-          <div class="dashbox"><small>Toplam Kullanıcı</small><span id="adminTotalUsers">0</span><em>Kayıtlı hesap</em></div>
+          <div class="dashbox"><small>Toplam Kullanıcı</small><span id="adminTotalUsers">0</span><em>Güncel kayıt</em></div>
           <div class="dashbox"><small>Aktif Kullanıcı</small><span id="adminActiveUsers">0</span><em>Engelli olmayan</em></div>
           <div class="dashbox"><small>Son Giriş</small><span id="adminLastLogin">-</span><em>En güncel</em></div>
+        </div>
+        <div class="admin-search-wrap">
+          <label for="adminUserSearch">Kullanıcı Ara</label>
+          <input id="adminUserSearch" type="search"
+                 placeholder="Ad Soyad, kullanıcı adı, sicil veya e-posta..."
+                 oninput="filterAdminUsers()"
+                 autocomplete="off">
+          <div id="adminSearchResult" class="small"></div>
         </div>
         <div class="wide"><table class="admin-table"><thead><tr><th>Kullanıcı</th><th>Ad Soyad</th><th>Yetki</th><th>Durum</th><th>Son Giriş</th><th>İşlem</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div>
         <p class="small">Not: Tarayıcıdan gerçek Firebase Authentication hesabı silinemez; “sil” işlemi kullanıcıyı sistemde pasif hale getirir. Tam silme Firebase Console üzerinden yapılır.</p>
@@ -1802,7 +1839,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=64"></script>
-  <script src="firebase-mesai.js?v=64"></script>
+  <script src="app.js?v=65"></script>
+  <script src="firebase-mesai.js?v=65"></script>
 </body>
 </html>

@@ -27,6 +27,7 @@ let isLoadingCloud = false;
 let authInProgress = false;
 let unsubscribeRecordsSnapshot = null;
 let firstSnapshotHandled = false;
+let adminUsersCache = [];
 
 function safeDocId(value) {
   return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -503,45 +504,61 @@ async function completeForcedPasswordChange() {
   }
 }
 
-async function renderAdminPanel() {
-  const panel = document.getElementById("admin-section");
-  if (!panel) return;
-  const isAdmin = cloudUserProfile?.role === "admin";
-  panel.style.display = isAdmin ? "block" : "none";
-  if (!isAdmin) return;
-  const snap = await firebase.firestore()
-    .collection(SMART_COLLECTION)
-    .where("app", "==", APP_TAG)
-    .where("type", "==", "user")
-    .get();
-  const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  // Silinen/pasif işaretlenen kullanıcılar admin tablosunda gizlenir.
-  const visibleUsers = users.filter(u => !u.deleted);
-  const usernameCounts = visibleUsers.reduce((acc, u) => {
+function adminDateMs(value) {
+  if (!value) return 0;
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value.toDate === "function") return value.toDate().getTime();
+  if (value?.seconds) return Number(value.seconds) * 1000;
+  if (typeof value === "number") return value;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function adminUserActivityTime(user) {
+  // Önce son giriş, yoksa güncelleme/kayıt zamanı.
+  return adminDateMs(user?.lastLogin) ||
+         adminDateMs(user?.updatedAt) ||
+         adminDateMs(user?.createdAt);
+}
+
+function adminUserSearchText(user) {
+  const username = user?.username || (user?.email || "").split("@")[0] || "";
+  const sicil = user?.sicil || user?.sicilNo || user?.sicilNumarasi || "";
+  const name = user?.adSoyad || "";
+  const email = user?.email || user?.authEmail || "";
+  return [username, sicil, name, email].join(" ").toLocaleLowerCase("tr-TR");
+}
+
+function filterAdminUsers() {
+  const input = document.getElementById("adminUserSearch");
+  const query = String(input?.value || "").trim().toLocaleLowerCase("tr-TR");
+  const filtered = !query
+    ? adminUsersCache
+    : adminUsersCache.filter(user => adminUserSearchText(user).includes(query));
+  renderAdminUsersTable(filtered);
+}
+
+function renderAdminUsersTable(users) {
+  const tbody = document.getElementById("adminUsersTable");
+  const resultEl = document.getElementById("adminSearchResult");
+  if (!tbody) return;
+
+  if (resultEl) {
+    const query = String(document.getElementById("adminUserSearch")?.value || "").trim();
+    resultEl.textContent = query
+      ? `${users.length} kullanıcı bulundu.`
+      : `Toplam ${adminUsersCache.length} kullanıcı gösteriliyor.`;
+  }
+
+  const usernameCounts = adminUsersCache.reduce((acc, u) => {
     const key = normalizeUsername(u.username || (u.email || "").split("@")[0]);
     if (key) acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
-  visibleUsers.sort((a, b) => {
-    const getTime = (u) => {
-      if (u?.createdAt?.seconds) return u.createdAt.seconds * 1000;
-      if (typeof u?.createdAt === "number") return u.createdAt;
-      return new Date(u?.createdAt || 0).getTime() || 0;
-    };
-    return getTime(b) - getTime(a);
-  });
-  const active = visibleUsers.filter(u => !u.blocked);
-  const totalEl = document.getElementById("adminTotalUsers");
-  const activeEl = document.getElementById("adminActiveUsers");
-  const lastEl = document.getElementById("adminLastLogin");
-  if (totalEl) totalEl.textContent = visibleUsers.length;
-  if (activeEl) activeEl.textContent = active.length;
-  const latest = visibleUsers.map(u => u.lastLogin?.toDate ? u.lastLogin.toDate() : null).filter(Boolean).sort((a,b)=>b-a)[0];
-  if (lastEl) lastEl.textContent = latest ? latest.toLocaleDateString("tr-TR") : "-";
-  const tbody = document.getElementById("adminUsersTable");
-  if (!tbody) return;
-  tbody.innerHTML = visibleUsers.map(u => {
-    const last = u.lastLogin?.toDate ? u.lastLogin.toDate().toLocaleString("tr-TR") : "-";
+
+  tbody.innerHTML = users.map(u => {
+    const lastDate = adminDateMs(u.lastLogin);
+    const last = lastDate ? new Date(lastDate).toLocaleString("tr-TR") : "-";
     const key = normalizeUsername(u.username || (u.email || "").split("@")[0]);
     const duplicateNote = usernameCounts[key] > 1 ? " / Çift kayıt" : "";
     const durum = (u.blocked ? "Engelli" : "Aktif") + duplicateNote;
@@ -549,6 +566,45 @@ async function renderAdminPanel() {
     return `<tr><td>${escapeHtml(u.username || "-")}</td><td>${escapeHtml(u.adSoyad || "-")}</td><td>${escapeHtml(u.role || "personel")}</td><td>${durum}</td><td>${last}</td><td><div class="admin-actions"><button class="mini-btn" onclick='openAdminPasswordModal(${JSON.stringify(u).replace(/'/g, "&#39;")})'>🔑 Şifre Ata</button><button class="mini-btn" onclick="adminSetRole('${u.id}','${nextRole}')">${nextRole} yap</button><button class="mini-btn" onclick="adminToggleBlock('${u.id}',${u.blocked ? 'false':'true'})">${u.blocked ? 'Aktif et':'Engelle'}</button><button class="mini-btn mini-danger" onclick="adminSoftDelete('${u.id}')">Sil</button></div></td></tr>`;
   }).join("") || `<tr><td colspan="6">Kullanıcı bulunamadı.</td></tr>`;
 }
+
+async function renderAdminPanel() {
+  const panel = document.getElementById("admin-section");
+  if (!panel) return;
+  const isAdmin = cloudUserProfile?.role === "admin";
+  panel.style.display = isAdmin ? "block" : "none";
+  if (!isAdmin) return;
+
+  // Arama metnini koru; yenilemelerde kullanıcı listesi sıfırlanmasın.
+  const searchInput = document.getElementById("adminUserSearch");
+  const currentQuery = searchInput ? searchInput.value : "";
+
+  const snap = await firebase.firestore()
+    .collection(SMART_COLLECTION)
+    .where("app", "==", APP_TAG)
+    .where("type", "==", "user")
+    .get();
+
+  const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Silinen/pasif işaretlenen kullanıcılar admin tablosunda gizlenir.
+  adminUsersCache = users.filter(u => !u.deleted);
+
+  // En güncel kullanıcı en üstte: son giriş > son güncelleme > kayıt tarihi.
+  adminUsersCache.sort((a, b) => adminUserActivityTime(b) - adminUserActivityTime(a));
+
+  const active = adminUsersCache.filter(u => !u.blocked);
+  const totalEl = document.getElementById("adminTotalUsers");
+  const activeEl = document.getElementById("adminActiveUsers");
+  const lastEl = document.getElementById("adminLastLogin");
+  if (totalEl) totalEl.textContent = adminUsersCache.length;
+  if (activeEl) activeEl.textContent = active.length;
+
+  const latestMs = adminUsersCache.length ? adminUserActivityTime(adminUsersCache[0]) : 0;
+  if (lastEl) lastEl.textContent = latestMs ? new Date(latestMs).toLocaleDateString("tr-TR") : "-";
+
+  if (searchInput) searchInput.value = currentQuery;
+  filterAdminUsers();
+}
+
 async function adminSetRole(docId, role) {
   if (!confirm(`Yetki ${role} yapılsın mı?`)) return;
   await firebase.firestore().collection(SMART_COLLECTION).doc(docId).set({ role, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
