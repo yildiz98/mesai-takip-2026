@@ -381,6 +381,101 @@ function renderProfilePanel() {
   if (roleBox) roleBox.innerHTML = `<span class="profile-badge">${profile.role === "admin" ? "👮" : "⭐"} ${role}</span>`;
 }
 
+
+function openAdminPasswordModal(user) {
+  const modal = document.getElementById("adminPasswordModal");
+  if (!modal) return;
+  document.getElementById("adminPasswordUser").textContent = `${user.adSoyad || "Kullanıcı"} • ${user.username || "-"}`;
+  document.getElementById("adminPasswordTargetUid").value = user.uid || "";
+  document.getElementById("adminPasswordInput").value = "";
+  document.getElementById("adminPasswordConfirm").value = "";
+  document.getElementById("adminPasswordStatus").textContent = "";
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+  setTimeout(() => document.getElementById("adminPasswordInput")?.focus(), 80);
+}
+function closeAdminPasswordModal() {
+  const modal = document.getElementById("adminPasswordModal");
+  if (modal) {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+  }
+}
+function setAdminPasswordStatus(message, ok=false) {
+  const el = document.getElementById("adminPasswordStatus");
+  if (el) { el.textContent = message; el.className = "admin-password-status " + (ok ? "ok" : "warn"); }
+}
+async function adminSetTemporaryPassword() {
+  try {
+    if (cloudUserProfile?.role !== "admin") return setAdminPasswordStatus("Bu işlem sadece admin içindir.");
+    const targetUid = document.getElementById("adminPasswordTargetUid")?.value || "";
+    const password = document.getElementById("adminPasswordInput")?.value || "";
+    const confirmPassword = document.getElementById("adminPasswordConfirm")?.value || "";
+    if (!targetUid) return setAdminPasswordStatus("Kullanıcı bulunamadı.");
+    if (password.length < 8) return setAdminPasswordStatus("Geçici şifre en az 8 karakter olmalı.");
+    if (password !== confirmPassword) return setAdminPasswordStatus("Şifreler eşleşmiyor.");
+    if (targetUid === firebase.auth().currentUser?.uid) return setAdminPasswordStatus("Kendi admin hesabının şifresini bu ekrandan değiştirme. Firebase hesap ayarlarını kullan.");
+    const btn = document.getElementById("adminSetPasswordBtn");
+    if (btn) { btn.disabled = true; btn.textContent = "Atanıyor..."; }
+    if (!firebase.functions) throw new Error("Firebase Functions kütüphanesi yüklenmemiş. Sayfayı güncelleyin.");
+    const callable = firebase.functions().httpsCallable("adminSetTemporaryPassword");
+    const result = await callable({ targetUid, temporaryPassword: password });
+    setAdminPasswordStatus(result?.data?.message || "Geçici şifre başarıyla atandı.", true);
+    setTimeout(() => { closeAdminPasswordModal(); renderAdminPanel(); }, 1200);
+  } catch (e) {
+    console.error("Admin geçici şifre hatası", e);
+    const map = {
+      "functions/unauthenticated": "Admin oturumu bulunamadı. Tekrar giriş yapın.",
+      "functions/permission-denied": "Bu işlem için admin yetkisi gerekli.",
+      "functions/not-found": "Kullanıcının Firebase hesabı bulunamadı.",
+      "functions/invalid-argument": "Geçici şifre veya kullanıcı bilgisi geçersiz.",
+      "functions/failed-precondition": "Kullanıcının hesap durumu uygun değil."
+    };
+    setAdminPasswordStatus(map[e.code] || e.message || "Geçici şifre atanamadı.");
+  } finally {
+    const btn = document.getElementById("adminSetPasswordBtn");
+    if (btn) { btn.disabled = false; btn.textContent = "🔑 Geçici Şifre Ata"; }
+  }
+}
+
+async function forcePasswordChangeIfNeeded(profile) {
+  if (!profile?.forcePasswordChange) return false;
+  const modal = document.getElementById("forcePasswordModal");
+  if (!modal) return false;
+  const user = firebase.auth().currentUser;
+  if (!user) return false;
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+  document.getElementById("forcePasswordStatus").textContent = "Admin tarafından verilen geçici şifreyle giriş yaptınız. Devam etmek için yeni şifrenizi belirleyin.";
+  return true;
+}
+async function completeForcedPasswordChange() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  const password = document.getElementById("forcePasswordInput")?.value || "";
+  const confirmPassword = document.getElementById("forcePasswordConfirm")?.value || "";
+  const status = document.getElementById("forcePasswordStatus");
+  const btn = document.getElementById("forcePasswordBtn");
+  if (password.length < 8) { if (status) status.textContent = "Yeni şifre en az 8 karakter olmalı."; return; }
+  if (password !== confirmPassword) { if (status) status.textContent = "Şifreler eşleşmiyor."; return; }
+  if (btn) { btn.disabled = true; btn.textContent = "Güncelleniyor..."; }
+  try {
+    await user.updatePassword(password);
+    const ref = firebase.firestore().collection(SMART_COLLECTION).doc(userDocId(user.uid));
+    await ref.set({ forcePasswordChange: false, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    cloudUserProfile = await createOrUpdateUserProfile(user, {});
+    window.cloudUserProfile = cloudUserProfile;
+    const modal = document.getElementById("forcePasswordModal");
+    if (modal) { modal.classList.remove("show"); modal.setAttribute("aria-hidden", "true"); }
+    alert("Şifreniz başarıyla güncellendi. Bundan sonra yeni şifrenizle giriş yapabilirsiniz.");
+  } catch (e) {
+    console.error(e);
+    if (status) status.textContent = e.code === "auth/requires-recent-login" ? "Güvenlik nedeniyle yeniden giriş yapmanız gerekiyor." : (e.message || "Şifre güncellenemedi.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "🔐 Yeni Şifremi Kaydet"; }
+  }
+}
+
 async function renderAdminPanel() {
   const panel = document.getElementById("admin-section");
   if (!panel) return;
@@ -424,7 +519,7 @@ async function renderAdminPanel() {
     const duplicateNote = usernameCounts[key] > 1 ? " / Çift kayıt" : "";
     const durum = (u.blocked ? "Engelli" : "Aktif") + duplicateNote;
     const nextRole = u.role === "admin" ? "personel" : "admin";
-    return `<tr><td>${escapeHtml(u.username || "-")}</td><td>${escapeHtml(u.adSoyad || "-")}</td><td>${escapeHtml(u.role || "personel")}</td><td>${durum}</td><td>${last}</td><td><div class="admin-actions"><button class="mini-btn" onclick="adminSetRole('${u.id}','${nextRole}')">${nextRole} yap</button><button class="mini-btn" onclick="adminToggleBlock('${u.id}',${u.blocked ? 'false':'true'})">${u.blocked ? 'Aktif et':'Engelle'}</button><button class="mini-btn mini-danger" onclick="adminSoftDelete('${u.id}')">Sil</button></div></td></tr>`;
+    return `<tr><td>${escapeHtml(u.username || "-")}</td><td>${escapeHtml(u.adSoyad || "-")}</td><td>${escapeHtml(u.role || "personel")}</td><td>${durum}</td><td>${last}</td><td><div class="admin-actions"><button class="mini-btn" onclick='openAdminPasswordModal(${JSON.stringify(u).replace(/'/g, "&#39;")})'>🔑 Şifre Ata</button><button class="mini-btn" onclick="adminSetRole('${u.id}','${nextRole}')">${nextRole} yap</button><button class="mini-btn" onclick="adminToggleBlock('${u.id}',${u.blocked ? 'false':'true'})">${u.blocked ? 'Aktif et':'Engelle'}</button><button class="mini-btn mini-danger" onclick="adminSoftDelete('${u.id}')">Sil</button></div></td></tr>`;
   }).join("") || `<tr><td colspan="6">Kullanıcı bulunamadı.</td></tr>`;
 }
 async function adminSetRole(docId, role) {
@@ -472,6 +567,12 @@ function initMesaiFirebase() {
         await firebase.auth().signOut();
         authError("Bu kullanıcı admin tarafından engellenmiş/pasif yapılmış.");
         return;
+      }
+      if (cloudUserProfile.forcePasswordChange) {
+        document.body.classList.add("auth-ok");
+        firebaseReady = true;
+        renderProfilePanel();
+        await forcePasswordChangeIfNeeded(cloudUserProfile);
       }
       firebaseReady = true;
 

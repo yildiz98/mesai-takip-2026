@@ -1,0 +1,23 @@
+MESAİ TAKİP - ADMIN HESAP KURTARMA
+
+BU SÜRÜMDE EKLENEN AKIŞ
+1. Admin Paneli > Kullanıcı Yönetimi > 🔑 Şifre Ata.
+2. Personel için geçici şifre belirlenir.
+3. Cloud Function Firebase Authentication parolasını değiştirir ve forcePasswordChange=true yazar.
+4. Personel kullanıcı adı + geçici şifre ile giriş yapar.
+5. İlk girişte Yeni Şifrenizi Belirleyin ekranı zorunlu açılır.
+6. Personel yeni şifresini kaydedince forcePasswordChange=false olur.
+
+ÖNEMLİ
+- Firebase Admin SDK PWA içine konulmaz. functions/ klasöründe çalışır.
+- Firebase Console'da mevcut kullanıcılar silinmez/değiştirilmez; sadece seçilen personelin şifresi değiştirilir.
+- Admin hesabı: admin@mesaitakip.app
+- Admin kullanıcı adı: admin
+
+YAYINLAMA
+1. Bilgisayarda Firebase CLI kurulu ve Google hesabınızla giriş yapılmış olmalı.
+2. Proje klasöründe: npm install --prefix functions
+3. Ardından: firebase deploy --only functions
+4. GitHub Pages'e ana proje dosyalarını yükleyin.
+
+NOT: Cloud Function yayınlanmadan Admin > Şifre Ata çalışmaz.
