@@ -16,7 +16,7 @@ const MESAI_FIREBASE_CONFIG = {
 const ADMIN_EMAIL = "admin@mesaitakip.app";
 const ADMIN_USERNAME = "admin";
 // Vercel backend adresi: Vercel deploy ettikten sonra buraya kendi adresini yaz.
-const MESAI_BACKEND_URL = "https://MESAI-TAKIP-BACKEND.vercel.app";
+const MESAI_BACKEND_URL = "https://mesai-takip-2026.vercel.app";
 const SMART_COLLECTION = "smartapart";
 const APP_TAG = "mesaiTakip";
 let authMode = "login";
